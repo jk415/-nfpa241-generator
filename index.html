@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)file:///C:/Users/jk/Downloads/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFPA 241 Plan Generator — CAP Design Group</title>
+<script src="./index_files/index.umd.js.download"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9;min-height:100vh}
+  .header{background:#1e293b;border-bottom:4px solid #dc2626;padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
+  .header-left .sub{font-size:10px;font-weight:700;letter-spacing:.12em;color:#94a3b8;text-transform:uppercase}
+  .header-left .title{font-size:20px;font-weight:800;color:#fff;margin-top:2px}
+  .header-right{font-size:12px;color:#64748b}
+  .progress-bar{height:4px;background:#e2e8f0}
+  .progress-fill{height:4px;background:#dc2626;transition:width .3s}
+  .step-nav{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;overflow-x:auto}
+  .step-btn{padding:13px 14px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:#94a3b8;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:5px;font-family:inherit}
+  .step-btn.active{color:#dc2626;border-bottom-color:#dc2626;font-weight:700}
+  .step-btn.done{color:#16a34a}
+  .content{max-width:940px;margin:0 auto;padding:28px}
+  .step-header{margin-bottom:18px}
+  .step-header h2{font-size:20px;font-weight:800;color:#1e293b;margin-bottom:4px}
+  .step-header p{color:#475569;font-size:13px}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px 28px;margin-bottom:20px}
+  .card-title{font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.1em;border-bottom:2px solid #fee2e2;padding-bottom:10px;margin-bottom:18px}
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#64748b;margin-bottom:5px}
+  .field .hint{font-size:11px;color:#94a3b8;margin-bottom:5px}
+  .field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;color:#1e293b;background:#fff;outline:none;font-family:inherit}
+  .field textarea{resize:vertical}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:#dc2626}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .toggle-wrap{display:flex;align-items:flex-start;gap:12px;margin-bottom:15px}
+  .toggle{width:44px;height:24px;border-radius:12px;background:#e2e8f0;cursor:pointer;position:relative;flex-shrink:0;margin-top:2px;transition:background .2s}
+  .toggle.on{background:#dc2626}
+  .toggle-dot{width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .toggle.on .toggle-dot{left:23px}
+  .toggle-label{font-size:14px;font-weight:600;color:#1e293b}
+  .toggle-hint{font-size:12px;color:#94a3b8;margin-top:2px}
+  .contact-row{display:grid;grid-template-columns:1fr 1fr 1fr 32px;gap:8px;margin-bottom:8px}
+  .contact-row input{padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;font-family:inherit;outline:none}
+  .contact-row input:focus{border-color:#dc2626}
+  .btn-remove{background:#fee2e2;border:none;border-radius:6px;cursor:pointer;color:#dc2626;font-size:16px;display:flex;align-items:center;justify-content:center}
+  .btn-add{margin-top:8px;padding:8px 16px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}
+  .nav-btns{display:flex;justify-content:space-between;margin-top:24px}
+  .btn-prev{padding:12px 24px;background:#fff;color:#1e293b;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit}
+  .btn-prev:disabled{opacity:.4;cursor:default}
+  .btn-next{padding:12px 28px;background:#dc2626;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit}
+  .btn-generate{padding:16px 44px;background:#16a34a;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:17px;font-weight:800;font-family:inherit;display:block;margin:0 auto}
+  .btn-generate:disabled{background:#94a3b8;cursor:not-allowed}
+  .info-box{background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:20px;margin-bottom:20px}
+  .info-box h3{font-size:15px;font-weight:700;color:#166534;margin-bottom:12px}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;color:#166534}
+  .info-grid span{font-weight:700}
+  .blue-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px;margin-bottom:24px;font-size:13px;color:#1d4ed8}
+  .yellow-box{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;color:#92400e}
+  .green-box{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;font-size:13px;color:#166534;line-height:1.8}
+  .error-msg{color:#dc2626;margin-top:14px;font-size:13px;text-align:center}
+  .contact-header{display:grid;grid-template-columns:1fr 1fr 1fr 32px;gap:8px;margin-bottom:6px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase}
+  .map-frame{border:2px solid #e2e8f0;border-radius:10px;overflow:hidden;height:280px;margin-bottom:6px}
+  .map-frame iframe{border:0;width:100%;height:100%}
+  .map-label{font-size:13px;font-weight:700;color:#dc2626;margin-bottom:8px;margin-top:16px}
+  .map-hint{font-size:11px;color:#94a3b8;margin-top:4px}
+  .no-address{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:16px;text-align:center;color:#c2410c}
+  .toc-line{font-size:13px;padding:3px 0;color:#475569}
+  .toc-line.main{font-weight:700;color:#1e293b}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="sub">CAP Design Group</div>
+    <div class="title">NFPA 241 Plan Generator</div>
+  </div>
+  <div class="header-right">Jason Kahan P.E. No. 48388 &nbsp;|&nbsp; MA Fire Protection</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<div class="step-nav" id="stepNav"><button class="step-btn active " onclick="goStep(0)">
+      🏗️ Project Info
+    </button><button class="step-btn  " onclick="goStep(1)">
+      🏢 Building
+    </button><button class="step-btn  " onclick="goStep(2)">
+      👥 Contacts
+    </button><button class="step-btn  " onclick="goStep(3)">
+      🚒 Fire Dept / AHJ
+    </button><button class="step-btn  " onclick="goStep(4)">
+      🔥 Systems &amp; Hazards
+    </button><button class="step-btn  " onclick="goStep(5)">
+      🏠 Occupied Building
+    </button><button class="step-btn  " onclick="goStep(6)">
+      🗺️ Maps Preview
+    </button><button class="step-btn  " onclick="goStep(7)">
+      📄 Generate .docx
+    </button></div>
+
+<div class="content">
+  <div class="step-header">
+    <h2 id="stepTitle">🏗️ Project Info</h2>
+    <p id="stepSub">Step 1 of 8</p>
+  </div>
+  <div id="stepContent"><div class="card"><div class="card-title">Project Information</div><div class="field"><label>Project Address *</label><input type="text" value="" placeholder="69 Campbell Ave, Revere, MA 02151" oninput="data[&#39;projectAddress&#39;]=this.value"></div><div class="row2"><div class="field"><label>City / Municipality</label><select onchange="cityChanged(this.value)"><option value="Boston">Boston</option><option value="Revere" selected="">Revere</option><option value="Cambridge">Cambridge</option><option value="Somerville">Somerville</option><option value="Lynn">Lynn</option><option value="Quincy">Quincy</option><option value="Everett">Everett</option><option value="Medford">Medford</option><option value="Malden">Malden</option><option value="Waltham">Waltham</option><option value="Other">Other</option></select></div><div class="field"><label>Plan Date</label><input type="date" value="2026-03-06" placeholder="" oninput="data[&#39;planDate&#39;]=this.value"></div></div><div class="field"><label>Revision</label><input type="text" value="Rev. 0 — Initial Submission" placeholder="Rev. 0 — Initial Submission" oninput="data[&#39;revision&#39;]=this.value"></div><div class="field"><label>Scope of Work</label><textarea rows="2" placeholder="e.g. Installation of new fire sprinkler system and fire alarm system within the existing building" oninput="data[&#39;scopeOfWork&#39;]=this.value"></textarea></div></div></div>
+  <div class="nav-btns">
+    <button class="btn-prev" id="btnPrev" onclick="prevStep()" disabled="">← Previous</button>
+    <button class="btn-next" id="btnNext" onclick="nextStep()">Next Step →</button>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────
+const MA_CITIES = {
+  "Boston":    {fd:"Boston Fire Department",    addr:"1010 Massachusetts Avenue, Boston, MA 02118"},
+  "Revere":    {fd:"Revere Fire Department",     addr:"400 Broadway, Revere, MA 02151"},
+  "Cambridge": {fd:"Cambridge Fire Department",  addr:"491 Broadway, Cambridge, MA 02138"},
+  "Somerville":{fd:"Somerville Fire Department", addr:"259 Elm Street, Somerville, MA 02144"},
+  "Lynn":      {fd:"Lynn Fire Department",       addr:"135 Market Street, Lynn, MA 01901"},
+  "Quincy":    {fd:"Quincy Fire Department",     addr:"100 Coddington Street, Quincy, MA 02169"},
+  "Everett":   {fd:"Everett Fire Department",    addr:"210 Broadway, Everett, MA 02149"},
+  "Medford":   {fd:"Medford Fire Department",    addr:"100 Main Street, Medford, MA 02155"},
+  "Malden":    {fd:"Malden Fire Department",     addr:"200 Pleasant Street, Malden, MA 02148"},
+  "Waltham":   {fd:"Waltham Fire Department",    addr:"785 Main Street, Waltham, MA 02451"},
+  "Other":     {fd:"",addr:""}
+};
+
+let data = {
+  projectAddress:"", city:"Revere",
+  planDate: new Date().toISOString().split("T")[0],
+  revision:"Rev. 0 — Initial Submission",
+  buildingUse:"", useGroup:"R-2", constructionType:"Type V-B",
+  buildingHeight:"", storiesAbove:"3", storiesBelow:"1", occupantLoad:"",
+  hazardousMaterials:"None", scopeOfWork:"", buildingSummary:"",
+  contacts:[{name:"", role:"Fire Prevention Manager (FPPM)", phone:""}],
+  fdName:"", fdAddress:"", ahjName:"",
+  accessStreet:"", firelanesExisting:true, knoxBoxLocation:"Main entrance",
+  musterPointA:"Sidewalk in front of building, across the street",
+  musterPointB:"Rear of property / parking area",
+  nearestFireStation:"", responseTime:"", nearestHydrant:"",
+  hasExistingAlarm:false, existingAlarmDesc:"",
+  hasExistingSprinkler:false, existingSprinklerDesc:"",
+  existingSystems:"During construction the building shall employ fire extinguishers throughout per PIP plans.",
+  isOccupied:false, occupiedOperationNarrative:"", phaseDescription:"",
+  specialCircumstances:""
+};
+
+let currentStep = 0;
+const STEPS = [
+  {label:"Project Info",      icon:"🏗️"},
+  {label:"Building",          icon:"🏢"},
+  {label:"Contacts",          icon:"👥"},
+  {label:"Fire Dept / AHJ",   icon:"🚒"},
+  {label:"Systems & Hazards", icon:"🔥"},
+  {label:"Occupied Building",  icon:"🏠"},
+  {label:"Maps Preview",      icon:"🗺️"},
+  {label:"Generate .docx",    icon:"📄"},
+];
+
+// ── Helpers ──────────────────────────────────────────────────────────
+function field(label, name, value, type="text", placeholder="", hint="") {
+  const h = hint ? `<div class="hint">${hint}</div>` : "";
+  return `<div class="field"><label>${label}</label>${h}<input type="${type}" value="${esc(value)}" placeholder="${esc(placeholder)}" oninput="data['${name}']=this.value" /></div>`;
+}
+function select(label, name, value, options) {
+  const opts = options.map(o=>`<option value="${o}" ${o===value?"selected":""}>${o}</option>`).join("");
+  return `<div class="field"><label>${label}</label><select onchange="data['${name}']=this.value;renderStep()">${opts}</select></div>`;
+}
+function selectCity(label, name, value) {
+  const opts = Object.keys(MA_CITIES).map(o=>`<option value="${o}" ${o===value?"selected":""}>${o}</option>`).join("");
+  return `<div class="field"><label>${label}</label><select onchange="cityChanged(this.value)">${opts}</select></div>`;
+}
+function textarea(label, name, value, rows=3, hint="", placeholder="") {
+  const h = hint ? `<div class="hint">${hint}</div>` : "";
+  return `<div class="field"><label>${label}</label>${h}<textarea rows="${rows}" placeholder="${esc(placeholder)}" oninput="data['${name}']=this.value">${esc(value)}</textarea></div>`;
+}
+function toggle(label, name, value, hint="") {
+  const h = hint ? `<div class="toggle-hint">${hint}</div>` : "";
+  return `<div class="toggle-wrap">
+    <div class="toggle ${value?"on":""}" id="tog_${name}" onclick="toggleField('${name}')"><div class="toggle-dot"></div></div>
+    <div><div class="toggle-label">${label}</div>${h}</div>
+  </div>`;
+}
+function toggleField(name) {
+  data[name] = !data[name];
+  renderStep();
+}
+function cityChanged(val) {
+  data.city = val;
+  const ci = MA_CITIES[val];
+  if (ci) { data.fdName = ci.fd; data.fdAddress = ci.addr; }
+  renderStep();
+}
+function esc(str) {
+  return String(str||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function r2(children) { return `<div class="row2">${children}</div>`; }
+function card(title, html) { return `<div class="card"><div class="card-title">${title}</div>${html}</div>`; }
+
+// ── Contacts ──────────────────────────────────────────────────────────
+function renderContacts() {
+  let rows = `<div class="contact-header"><div>Name</div><div>Role</div><div>Phone</div><div></div></div>`;
+  data.contacts.forEach((c,i) => {
+    rows += `<div class="contact-row">
+      <input value="${esc(c.name)}" placeholder="Name" oninput="data.contacts[${i}].name=this.value"/>
+      <input value="${esc(c.role)}" placeholder="Role" oninput="data.contacts[${i}].role=this.value"/>
+      <input value="${esc(c.phone)}" placeholder="Phone" oninput="data.contacts[${i}].phone=this.value"/>
+      <button class="btn-remove" onclick="removeContact(${i})">×</button>
+    </div>`;
+  });
+  return rows + `<button class="btn-add" onclick="addContact()">+ Add Contact</button>`;
+}
+function addContact() { data.contacts.push({name:"",role:"",phone:""}); renderStep(); }
+function removeContact(i) { data.contacts.splice(i,1); renderStep(); }
+
+// ── Step renderer ─────────────────────────────────────────────────────
+function getStepHTML() {
+  switch(currentStep) {
+    case 0: return card("Project Information",
+      field("Project Address *","projectAddress",data.projectAddress,"text","69 Campbell Ave, Revere, MA 02151") +
+      r2(selectCity("City / Municipality","city",data.city) + field("Plan Date","planDate",data.planDate,"date")) +
+      field("Revision","revision",data.revision,"text","Rev. 0 — Initial Submission") +
+      textarea("Scope of Work","scopeOfWork",data.scopeOfWork,2,"","e.g. Installation of new fire sprinkler system and fire alarm system within the existing building")
+    );
+    case 1: return (
+      card("Building Description",
+        r2(select("Use Group","useGroup",data.useGroup,["R-1","R-2","R-3","A-1","A-2","B","E","I-1","I-2","M","S-1","S-2","U"]) +
+           field("Building Use","buildingUse",data.buildingUse,"text","e.g. Boarding/Lodging House")) +
+        r2(select("Construction Type","constructionType",data.constructionType,["Type I-A","Type I-B","Type II-A","Type II-B","Type III-A","Type III-B","Type IV-A","Type IV-B","Type IV-C","Type V-A","Type V-B"]) +
+           field("Building Height","buildingHeight",data.buildingHeight,"text","35'-0\"")) +
+        r2(field("Stories Above Grade","storiesAbove",data.storiesAbove,"number") +
+           field("Stories Below Grade","storiesBelow",data.storiesBelow,"number")) +
+        r2(field("Occupant Load (Est.)","occupantLoad",data.occupantLoad,"text","e.g. 6 residents") +
+           field("Hazardous Materials","hazardousMaterials",data.hazardousMaterials,"text","None")) +
+        textarea("Custom Building Summary","buildingSummary",data.buildingSummary,3,"Leave blank to auto-generate from fields above.","Leave blank to auto-generate...")
+      ) +
+      card("Existing Life Safety Systems",
+        toggle("Existing Fire Alarm System","hasExistingAlarm",data.hasExistingAlarm) +
+        (data.hasExistingAlarm ? field("Describe Existing Alarm","existingAlarmDesc",data.existingAlarmDesc,"text","e.g. Partial conventional, 1 smoke/floor") : "") +
+        toggle("Existing Sprinkler System","hasExistingSprinkler",data.hasExistingSprinkler) +
+        (data.hasExistingSprinkler ? field("Describe Existing Sprinkler","existingSprinklerDesc",data.existingSprinklerDesc,"text","e.g. NFPA 13D partial wet") : "") +
+        textarea("Systems Summary","existingSystems",data.existingSystems,2)
+      )
+    );
+    case 2: return card("Project Contacts & Stakeholders",
+      `<p style="font-size:12px;color:#64748b;margin-bottom:14px">The contact with "FPPM" or "Fire Prevention" in their role will be used as the Fire Protection Program Manager throughout the plan.</p>` +
+      renderContacts()
+    );
+    case 3: return (
+      card("Fire Department",
+        field("Fire Department Name","fdName",data.fdName||MA_CITIES[data.city]?.fd||"","text",MA_CITIES[data.city]?.fd||"","Auto-populated from city — edit if needed") +
+        field("Fire Department Address","fdAddress",data.fdAddress||MA_CITIES[data.city]?.addr||"","text",MA_CITIES[data.city]?.addr||"") +
+        r2(field("Nearest Fire Station","nearestFireStation",data.nearestFireStation,"text","Station 1 — 400 Broadway (0.8 mi)") +
+           field("Estimated Response Time","responseTime",data.responseTime,"text","6–7 minutes")) +
+        field("AHJ Name","ahjName",data.ahjName,"text",`City of ${data.city} Inspectional Services Department`,"Leave blank to auto-generate")
+      ) +
+      card("Site Access & Emergency Response",
+        field("Primary Access Street *","accessStreet",data.accessStreet,"text","e.g. Campbell Ave.") +
+        toggle("Fire Lanes Are Existing","firelanesExisting",data.firelanesExisting,"Toggle off if fire lanes need to be established") +
+        field("Knox Box Location","knoxBoxLocation",data.knoxBoxLocation,"text","Main entrance — front door") +
+        field("Nearest Fire Hydrant","nearestHydrant",data.nearestHydrant,"text","e.g. SW corner of Campbell Ave. and N. Shore Rd.") +
+        field("Muster Point A (Primary)","musterPointA",data.musterPointA,"text","Sidewalk in front of building, across the street") +
+        field("Muster Point B (Secondary)","musterPointB",data.musterPointB,"text","Rear parking area")
+      )
+    );
+    case 4: return card("Systems & Special Hazards",
+      textarea("Existing Systems Narrative","existingSystems",data.existingSystems,3) +
+      textarea("Special Circumstances (Section 3.5)","specialCircumstances",data.specialCircumstances,4,"Leave blank if none — standard language will be used.","e.g. unique access constraints, site-specific hazards...")
+    );
+    case 5: return card("Occupied Building Settings",
+      toggle("Building Remains Occupied During Construction","isOccupied",data.isOccupied,"Enables Section 5.3 (Phased Installation Plan) and full Annex F (527 CMR 10.9 Emergency Plan Coordination with fire watch procedures)") +
+      (data.isOccupied ? `
+        <div class="yellow-box"><strong>Occupied mode ON.</strong> Section 5.3 and Annex F (F.1–F.9) including fire watch requirements and 527 CMR 10.9 coordination will be included in your .docx file.</div>
+        ${textarea("Phased Construction Description (optional)","phaseDescription",data.phaseDescription,4,"Leave blank for standard phased language.","e.g. Phase 1 — Basement (riser, FACP). Phase 2 — 1st Floor (relocate unit 1)...")}
+        ${textarea("Occupied Operation Narrative — Annex F.8 (optional)","occupiedOperationNarrative",data.occupiedOperationNarrative,4,"Leave blank for standard boilerplate.","Describe how the property continues to operate during construction.")}
+      ` : "")
+    );
+    case 6:
+      const addr = data.projectAddress;
+      const mapsHTML = addr ? `
+        <div class="map-label">📍 Locus Map — Annex A</div>
+        <div class="map-frame"><iframe src="https://maps.google.com/maps?q=${encodeURIComponent(addr)}&output=embed&z=15" allowfullscreen></iframe></div>
+        <div class="map-hint">Screenshot this for Annex A — Building Overview</div>
+        <div class="map-label">🚒 Nearest Fire Stations — Annex A</div>
+        <div class="map-frame"><iframe src="https://maps.google.com/maps?q=fire+station+near+${encodeURIComponent(addr)}&output=embed&z=13" allowfullscreen></iframe></div>
+        <div class="map-hint">Note distances and response times. Screenshot for Annex A.</div>
+        <div class="map-label">💧 Fire Hydrant Locations — Annex B</div>
+        <div class="map-frame"><iframe src="https://maps.google.com/maps?q=fire+hydrant+near+${encodeURIComponent(addr)}&output=embed&z=15" allowfullscreen></iframe></div>
+        <div class="map-hint">Screenshot and annotate with red arrows for Annex B.</div>
+        <div class="green-box" style="margin-top:16px"><strong>Tip:</strong> Right-click any map → "Open image in new tab" or open in Google Maps for a full-screen view to screenshot.</div>
+      ` : `<div class="no-address">Enter a project address in Step 1 to generate maps.</div>`;
+      return card("Maps Preview — For Annexes A &amp; B",
+        `<p style="font-size:13px;color:#475569;margin-bottom:16px">The generated .docx will contain placeholder notes for each map. Use these live previews to take screenshots for the final document.</p>` + mapsHTML
+      );
+    case 7:
+      const ci = MA_CITIES[data.city]||{fd:"",addr:""};
+      const fd2 = data.fdName||ci.fd||data.city+" Fire Department";
+      const fppm2 = data.contacts.find(c=>/fppm|fire prev/i.test(c.role))||data.contacts[0]||{};
+      return `
+        <div class="card">
+          <div class="card-title">Generate Formatted .docx File</div>
+          <div class="info-box">
+            <h3>✅ Ready to generate</h3>
+            <div class="info-grid">
+              <div><span>Project:</span> ${esc(data.projectAddress)||"(not set)"}</div>
+              <div><span>City / FD:</span> ${esc(fd2)}</div>
+              <div><span>Building:</span> ${esc(data.useGroup)} — ${esc(data.constructionType)}</div>
+              <div><span>FPPM:</span> ${esc(fppm2.name)||"(not set)"}</div>
+              <div><span>Occupied Building:</span> ${data.isOccupied?"YES — Annex F included":"No"}</div>
+              <div><span>Contacts:</span> ${data.contacts.length} stakeholder(s)</div>
+            </div>
+          </div>
+          <div class="blue-box"><strong>Your .docx includes:</strong> Branded cover page · Contact &amp; stakeholder table · Full table of contents · All 5 sections with your data pre-filled · NFPA 241 Table 4.2.1 · Annexes A–E with formatted checklists${data.isOccupied?" · Full Annex F (F.1–F.9) with fire watch procedures":""} · Running header/footer · Signature &amp; certification page</div>
+          <div style="text-align:center">
+            <button class="btn-generate" id="btnGenerate" onclick="generateDocx()">⬇️ Download NFPA 241 Plan (.docx)</button>
+            <p class="error-msg" id="errorMsg" style="display:none"></p>
+            <div class="green-box" id="successBox" style="display:none;margin-top:18px;text-align:left">
+              <strong>Next Steps in Word:</strong><br>
+              1. Insert map screenshots into Annex A and B placeholder pages<br>
+              2. Drop in your PE seal image on the cover page<br>
+              3. Use Ctrl+F and search for <strong>[</strong> to find any remaining bracket placeholders<br>
+              4. Save as PDF and submit to AHJ
+            </div>
+          </div>
+        </div>`;
+    default: return "";
+  }
+}
+
+// ── Navigation ────────────────────────────────────────────────────────
+function renderNav() {
+  const nav = document.getElementById("stepNav");
+  nav.innerHTML = STEPS.map((s,i)=>
+    `<button class="step-btn ${i===currentStep?"active":""} ${i<currentStep?"done":""}" onclick="goStep(${i})">
+      ${i<currentStep?"✓":s.icon} ${s.label}
+    </button>`
+  ).join("");
+  document.getElementById("progressFill").style.width = (currentStep/(STEPS.length-1)*100)+"%";
+  document.getElementById("btnPrev").disabled = currentStep===0;
+  const btnNext = document.getElementById("btnNext");
+  if (currentStep === STEPS.length-1) { btnNext.style.display="none"; } else { btnNext.style.display=""; }
+}
+
+function renderStep() {
+  document.getElementById("stepTitle").textContent = STEPS[currentStep].icon + " " + STEPS[currentStep].label;
+  document.getElementById("stepSub").textContent = `Step ${currentStep+1} of ${STEPS.length}`;
+  document.getElementById("stepContent").innerHTML = getStepHTML();
+  renderNav();
+}
+
+function goStep(i) { currentStep=i; renderStep(); window.scrollTo(0,0); }
+function nextStep() { if(currentStep<STEPS.length-1){currentStep++;renderStep();window.scrollTo(0,0);} }
+function prevStep() { if(currentStep>0){currentStep--;renderStep();window.scrollTo(0,0);} }
+
+// ── DOCX Generation ───────────────────────────────────────────────────
+async function generateDocx() {
+  const btn = document.getElementById("btnGenerate");
+  const err = document.getElementById("errorMsg");
+  const suc = document.getElementById("successBox");
+  btn.disabled=true; btn.textContent="⏳ Building document...";
+  err.style.display="none"; suc.style.display="none";
+
+  try {
+    if (!window.docx) throw new Error("docx library not loaded. Check your internet connection and refresh.");
+    const blob = await buildDocxBlob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    const safe = (data.projectAddress||"Plan").replace(/[^a-zA-Z0-9]/g,"_").replace(/_+/g,"_");
+    a.href=url; a.download=`NFPA241_${safe}_${data.planDate||"Draft"}.docx`; a.click();
+    URL.revokeObjectURL(url);
+    btn.textContent="✅ Downloaded! Generate Again?";
+    btn.disabled=false;
+    suc.style.display="block";
+  } catch(e) {
+    console.error(e);
+    err.textContent="Error: "+e.message;
+    err.style.display="block";
+    btn.textContent="⬇️ Download NFPA 241 Plan (.docx)";
+    btn.disabled=false;
+  }
+}
+
+async function buildDocxBlob() {
+  const D = window.docx;
+  const {Document,Paragraph,TextRun,Table,TableRow,TableCell,
+         WidthType,AlignmentType,BorderStyle,Packer,PageBreak,
+         ShadingType,Header,Footer} = D;
+
+  const DRED="DC2626", DDARK="1E293B", DGREY="475569";
+  const pt = n => n*20;
+
+  const ci    = MA_CITIES[data.city]||{fd:"",addr:""};
+  const fd    = data.fdName    || ci.fd   || "[FIRE DEPARTMENT]";
+  const fda   = data.fdAddress || ci.addr || "[FD ADDRESS]";
+  const ahj   = data.ahjName   || `City of ${data.city} Inspectional Services Department`;
+  const fppm  = data.contacts.find(c=>/fppm|fire prev/i.test(c.role))||data.contacts[0]||{};
+  const today = new Date(data.planDate||Date.now()).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+
+  const sp  = (a=80) => new Paragraph({spacing:{after:a},children:[new TextRun("")]});
+  const pb  = ()     => new Paragraph({children:[new PageBreak()]});
+  const run = (t,o={}) => new TextRun({text:t,font:"Calibri",size:pt(o.size||10.5),bold:o.bold||false,italics:o.italic||false,color:o.color||"333333",underline:o.ul?{}:undefined});
+  const par = (t,o={}) => new Paragraph({alignment:o.align||AlignmentType.LEFT,spacing:{before:o.before||0,after:o.after||80},children:[run(t,o)]});
+  const bul = t => new Paragraph({bullet:{level:0},spacing:{after:60},children:[run(t,{size:10.5})]});
+  const kv  = (k,v) => new Paragraph({spacing:{after:60},children:[run(k+":  ",{bold:true,size:10.5}),run(v||"[TBD]",{size:10.5})]});
+
+  const h1 = t => new Paragraph({spacing:{before:300,after:120},border:{bottom:{color:DRED,size:8,style:BorderStyle.SINGLE,space:4}},children:[run(t,{bold:true,size:14,color:DDARK})]});
+  const h2 = t => new Paragraph({spacing:{before:200,after:80},children:[run(t,{bold:true,size:12,color:DRED})]});
+  const h3 = t => new Paragraph({spacing:{before:140,after:60},children:[run(t,{bold:true,size:11,color:DDARK,ul:true})]});
+
+  const mkcell = (t,o={}) => new TableCell({
+    shading:o.sh?{fill:o.sh,type:ShadingType.CLEAR,color:o.sh}:undefined,
+    width:o.w?{size:o.w,type:WidthType.PERCENTAGE}:undefined,
+    children:[new Paragraph({alignment:o.center?AlignmentType.CENTER:AlignmentType.LEFT,children:[run(t,{bold:o.bold||false,color:o.sh?"FFFFFF":(o.color||"333333"),size:o.size||10})]})]
+  });
+
+  const hRow = cols => new TableRow({tableHeader:true,children:cols.map(([t,w])=>mkcell(t,{sh:DDARK,bold:true,w,center:true}))});
+  const dRow = (vals,ws) => new TableRow({children:vals.map((v,i)=>mkcell(v||" ",{w:ws?ws[i]:undefined}))});
+
+  // Contact table
+  const contactTable = new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
+    hRow([["Contact",33],["Project Role",33],["Contact Information",34]]),
+    ...data.contacts.map(c=>dRow([c.name,c.role,c.phone],[33,33,34]))
+  ]});
+
+  // Separation table
+  const sepTable = new Table({width:{size:70,type:WidthType.PERCENTAGE},rows:[
+    hRow([["Temp Structure Wall Length",50],["Min. Separation Distance",50]]),
+    ...[ ["20 ft (6 m)","30 ft (9 m)"],["30 ft (9 m)","35 ft (11 m)"],["40 ft (12 m)","40 ft (12 m)"],
+         ["50 ft (15 m)","45 ft (14 m)"],["60 ft (18 m)","50 ft (15 m)"],[">60 ft","60 ft (18 m)"] ]
+      .map(r=>dRow(r,[50,50]))
+  ]});
+
+  // NFPA 241 checklist
+  const n241rows = [
+    ["4.2","Temporary Offices & Sheds — Separation per Table 4.2.1"],["4.3.4","Fire Extinguishers — Travel distance < 50 ft"],
+    ["4.4.1","Equipment — Internal combustion engine exhaust away from combustibles"],["5.1.1","Hot Work — Per NFPA 51B and AHJ policy"],
+    ["5.1.3.1","Fire Watch — Dedicated personnel, no other duties assigned"],["5.2.1","Temporary Heating Equipment — Listed and per manufacturer instructions"],
+    ["5.2.8","Temporary Heating Equipment — Monitored for safe operation"],["5.4.1","Waste Disposal — Removed daily"],
+    ["5.4.4.1","Trash Chute Safety Plan in place"],["5.5.1","Flammable & Combustible Liquids — Max 60 gallons Class I & II"],
+    ["5.5.1.5","F/C Liquids & Gases — 'No Smoking' signs posted"],["6.1.1","Electrical — Per NFPA 70 / 527 CMR 12"],
+    ["6.1.1.2","Electrical — Extension cords free from damage"],["6.1.2","Temporary Wiring — Branch circuits from approved outlet or panelboard"],
+    ["6.1.2.3","Temporary Wiring — Conductors protected by overcurrent devices"],["7.1","Fire Protection — Fire safety program in place"],
+    ["7.2.3.1","Fire Protection — Prefire plans developed with fire department"],["7.2.3.3","Fire Protection — On-site FD visit provisions in place"],
+    ["7.2.4.4","Weekly self-inspection program active"],["7.4.1","Fire Alarm Reporting — Fire alarm box / telephone service"],
+    ["7.5.4","Access for Fire Fighting — Key box in place"],["7.5.6","Stairs — At least one stair provided"],
+    ["7.5.6.3","Stairway is lighted"],["7.5.6.5","Exit stairs — Floor level, stair designation, exit direction signage"],["8.6.2.2","Temporary separation walls — One hour fire rating"]
+  ];
+  const n241Table = new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
+    hRow([["NFPA 241",13],["Description",75],["Y / N / N/A",12]]),
+    ...n241rows.map(([r,d2])=>dRow([r,d2,""],[13,75,12]))
+  ]});
+
+  // Fire Code checklist
+  const fcrows = [
+    ["1403.1","Temporary Heating Equipment: Listed and Labeled"],["1403.6","Temporary Heating Equipment: Supervised"],
+    ["1404.1","Smoking: Approved Areas Designated"],["1404.1;310","Smoking: No Smoking Signs Posted"],
+    ["1404.2","Waste Disposal: Combustible Waste Removed Daily"],["1404.5","Fire Watch: When Required by Code Official"],
+    ["1404.6;1408.5","Hot Work per AHJ Policy"],["1404.7","Electrical: Temporary Wiring per Building Code Ch. 27"],
+    ["1405.1","Flammable & Combustible Liquids: Storage per FC 3404"],["1405.2","F/C Liquids: Class I & II per FC 3406.2"],
+    ["1405.4","F/C Liquids: Sources of Ignition / Smoking Prohibited"],["1405.5","F/C Liquids: Class I & II in Safety Containers"],
+    ["1406.1","Flammable Gases: Per FC Chapter 35"],["1408.1","Fire Protection: Fire Prevention Superintendent Designated"],
+    ["1408.2","Fire Protection: Develop & Maintain Pre-Fire Plan"],["1408.3","Fire Protection: Training of Personnel"],
+    ["1408.4","Fire Protection: Fire Protection Devices Maintained"],["1408.6","Fire Protection: Impairments per FC 901"],
+    ["1408.7","Fire Protection: Temporary Covering of Devices"],["1409","Fire Alarm Reporting: Emergency Telephone Available"],
+    ["1409","Fire Alarm Reporting: Address & Phone Number Posted"],["1410.1","Access for Fire Fighting: Access Roads Available"],
+    ["1410.1","Access for Fire Fighting: Key Box Provided"],["1411.1","Means of Egress: One Lighted Stairwell Required"],
+    ["1411.2","MOE: Maintained During Construction / Demolition"],["1412.1","Water Supply for Fire Protection: Provided"],
+    ["1413","Standpipes"],["1414","Fire Sprinkler: Approved Prior to Occupancy"],
+    ["1415","Fire Extinguishers: Each Stairway — All Floors"],["1415","Fire Extinguishers: Each Storage Shed"],
+    ["1416.1","Motorized Equipment: Internal Combustion Powered"],["1417","Roofing: Asphalt and Tar Kettles per FC 303"],["1417.3","Roofing: Fire Extinguishers per FC 906"]
+  ];
+  const fcTable = new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
+    hRow([["IFC / CMR",14],["Description",74],["Y / N / N/A",12]]),
+    ...fcrows.map(([r,d2])=>dRow([r,d2,""],[14,74,12]))
+  ]});
+
+  // Permit log
+  const permitTable = new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
+    hRow([["Date",10],["Contractor",20],["Description of Work",35],["Hazard Level",15],["Permit No.",20]]),
+    ...Array(8).fill(null).map(()=>dRow(["","","","",""],[10,20,35,15,20]))
+  ]});
+
+  const children = [
+    // Cover
+    sp(240),par("NFPA-241",{bold:true,size:34,color:DDARK,align:AlignmentType.CENTER,after:20}),
+    par("CONSTRUCTION SAFETY PLAN",{bold:true,size:28,color:DRED,align:AlignmentType.CENTER,after:20}),sp(160),
+    par(data.projectAddress||"[PROJECT ADDRESS]",{bold:true,size:18,color:DDARK,align:AlignmentType.CENTER,after:16}),sp(80),
+    par(`Date: ${today}`,{size:11,color:DGREY,align:AlignmentType.CENTER,after:12}),
+    par(data.revision||"Rev. 0 — Initial Submission",{size:11,color:DGREY,align:AlignmentType.CENTER,after:12}),sp(160),
+    par("CAP Design Group / JFP Solutions, Inc.",{bold:true,size:12,color:DDARK,align:AlignmentType.CENTER,after:10}),
+    par("335 Washington St. Suite 1114, Woburn, MA 01801",{size:10,color:DGREY,align:AlignmentType.CENTER,after:10}),
+    par("Jason Kahan P.E. — MA Fire Protection PE License No. 48388",{size:10,color:DGREY,align:AlignmentType.CENTER,after:10}),
+    par("617-644-0014  |  admin@capcofire.com  |  capcofire.com",{size:10,color:DGREY,align:AlignmentType.CENTER,after:10}),sp(140),
+    par("[PE SEAL — INSERT HERE]",{size:11,color:"94a3b8",italic:true,align:AlignmentType.CENTER}),pb(),
+
+    // Contacts
+    h1("PROJECT CONTACT AND STAKEHOLDER LIST"),contactTable,sp(200),
+    h2("PREPARED FOR:"),par(ahj),par(fd),par(fda),pb(),
+
+    // TOC
+    h1("TABLE OF CONTENTS"),
+    ...[
+      ["1. ADMINISTRATION / APPLICABLE CODE",true],
+      ["   1.1  Plan Overview",false],["   1.2  Building Summary",false],["   1.3  Applicable Code & Standards",false],
+      ["2. TEMPORARY CONSTRUCTION, EQUIPMENT & STORAGE",true],
+      ["   2.1  Construction Fence Requirements",false],["   2.2  Temporary Structure Requirements",false],["   2.3  Project Site Security Measures",false],["   2.4  Construction Debris Storage",false],
+      ["3. PROCESSES & HAZARDS",true],
+      ["   3.1  Fall Protection",false],["   3.2  PPE Requirements",false],["   3.3  Hot Work Instructions",false],["   3.4  Smoking",false],["   3.5  Special Circumstances",false],
+      ["4. FIRE PROTECTION",true],
+      ["   4.1  Responsibilities",false],["   4.2  Pre-Incident Planning",false],["   4.3  Access for Fire Department",false],
+      ["   4.4  Emergency Muster Points",false],["   4.5  Existing Life Safety Systems",false],["   4.6  Site Fire Alarm Notification",false],["   4.7  Fire Command Post",false],
+      ["5. SAFEGUARDING FOR CONSTRUCTION, ALTERATION & DEMOLITION",true],
+      ["   5.1  Emergency Evacuation",false],["   5.2  Emergency Training",false],
+      ...(data.isOccupied?[["   5.3  Occupied Building & Phased Installation Plan (5.3.1–5.3.6)",false]]:[]),
+      ["   5.4  Evacuation Plans",false],["   5.5  Evacuation Signaling & Egress Requirements",false],
+      ["ANNEX A — Project Location Map",true],
+      ["ANNEX B — Emergency Access / Pre-Incident Plan (PIP) & Fire Hydrant Locations",true],
+      ["ANNEX C — Permit Log",true],
+      ["ANNEX D — NFPA-241 Weekly Safety Checklist",true],
+      ["ANNEX E — Fire Code of Massachusetts Weekly Checklist",true],
+      ...(data.isOccupied?[["ANNEX F — 527 CMR 10.9 Emergency Plan Coordination (Occupied Building)",true]]:[]),
+    ].map(([t,main])=>new Paragraph({spacing:{after:55},children:[run(t,{size:10.5,bold:main,color:main?"1E293B":"475569"})]})),
+    pb(),
+
+    // Section 1
+    h1("1. PLAN ADMINISTRATION / APPLICABLE CODE"),
+    h2("1.1 OVERVIEW"),
+    par("This MASTER NFPA-241 PLAN/FIRE PROGRAM has been developed to address the responsibilities required per NFPA-241 for safeguarding during construction and includes site safety requirements to be adhered to throughout construction."),
+    par("This NFPA-241 report is intended to be a live document and will require the FPPM, owner, general contractor, and authorities having jurisdiction to provide updates throughout construction in order to remain current."),
+    sp(60),
+    par("[ANNEX A — LOCUS MAP TO BE INSERTED HERE]",{italic:true,color:"94a3b8"}),
+    par(`[ANNEX A — NEAREST FIRE DEPARTMENT MAP — ${fd} — INSERT HERE]`,{italic:true,color:"94a3b8"}),
+    par("[ANNEX A — FIRST RESPONDER VANTAGE POINT PHOTOGRAPH — INSERT HERE]",{italic:true,color:"94a3b8"}),
+    sp(80),h2("1.2 BUILDING SUMMARY"),
+    par(data.buildingSummary||`The property at ${data.projectAddress||"[ADDRESS]"} is an existing ${data.buildingUse||"[building use]"} that will ${data.isOccupied?"remain operational during construction":"be unoccupied during construction"}. The scope of work consists of ${data.scopeOfWork||"[scope of work]"}. No change of use is proposed.`),
+    ...(data.isOccupied?[par("The building will remain in active use throughout construction. The building will continue to operate under a 527 CMR 10.9 Emergency Plan, which remains in effect throughout construction. This NFPA 241 Construction Safety Plan supplements the Emergency Plan by addressing construction-specific fire prevention measures, system impairments, occupant notification, and emergency coordination. At no time will required exits or emergency response capabilities be compromised without appropriate compensatory measures in place.")]:[]),
+    sp(80),h3("Building Description:"),
+    kv("Use Group",data.useGroup),kv("Construction Type",data.constructionType),
+    kv("Building Height",data.buildingHeight),kv("Stories Above Grade",data.storiesAbove),
+    kv("Stories Below Grade",data.storiesBelow),kv("Occupant Load (Est.)",data.occupantLoad),
+    kv("Hazardous Materials",data.hazardousMaterials||"None"),
+    kv("Emergency Vehicle Access",`${data.accessStreet||"[ACCESS STREET]"} — fire lanes ${data.firelanesExisting?"are existing":"to be established"}`),
+    sp(80),h2("1.3 APPLICABLE CODE & STANDARDS"),
+    par("This document is prepared in accordance with the requirements of the following codes and standards:"),
+    ...["NFPA-10  (2018)  Standard for Portable Fire Extinguishers",
+        "NFPA-13  (2019)  Standard for Installation of Automatic Sprinkler Systems",
+        "NFPA-30  (2021)  Flammable and Combustible Liquids",
+        "NFPA-51B (2019)  Standard for Fire Prevention During Welding, Cutting, and Hot Work",
+        "NFPA-70  (2023)  National Electric Code / 527 CMR 12",
+        "NFPA-72  (2019)  National Fire Alarm and Signaling Code",
+        "NFPA-101 (2021)  Life Safety Code",
+        "NFPA-241 (2019)  Safeguarding During Construction, Alteration & Demolition",
+        "780 CMR  (10th Ed.)  Massachusetts State Building Code",
+        "527 CMR  (1.00)  Massachusetts Fire Code",
+        "521 CMR           Massachusetts Architectural Access Board",
+        ...(data.isOccupied?["527 CMR  (10.9)  Emergency Plan Requirements — Occupied Buildings"]:[])
+       ].map(bul),pb(),
+
+    // Section 2
+    h1("2. TEMPORARY CONSTRUCTION & STORAGE"),
+    h2("2.1 TEMPORARY FENCING"),
+    par("All construction fencing is to be minimum 7'-0\" tall chain link with privacy fabric. Gates and openings will be clearly marked — black lettering on white background. Project contact information and building permit shall be posted at the main gate entrance."),
+    sp(80),h2("2.2 TEMPORARY SITE STRUCTURES"),
+    par("In the event a temporary structure is required it shall be separated from the building by a minimum of 20 feet per NFPA 241 Table 4.2.1. All material must be noncombustible or FRT plywood/framing."),
+    sp(60),h3("NFPA 241 Table 4.2.1 — Minimum Separation Distances:"),sepTable,sp(120),
+    h2("2.3 SITE SECURITY MEASURES"),
+    par("The general contractor is responsible for the integrity of the building throughout construction. The building must be made secure at the end of each working day and inspected for suspicious activity at the start of each working day."),
+    sp(80),h2("2.4 CONSTRUCTION DEBRIS STORAGE"),
+    par("FPPM or their designee will walk the project daily. No substantial quantity of combustible material will be allowed stored inside the building. Dumpsters cannot be left overnight more than 75% filled."),pb(),
+
+    // Section 3
+    h1("3. PROCESSES & HAZARDS"),
+    h2("3.1 FALL PROTECTION"),
+    par("All work at a height of 6'-0\" or greater shall comply with OSHA 29 CFR 1926.502 and NFPA 241 Section 3.1."),
+    bul("No work within 6'-0\" of a leading edge without handrails or personal fall arrest systems"),
+    bul("Guardrail systems shall be a minimum of 42\" tall at all vertical openings"),
+    bul("All roof work assessed by FPPM — fall arrest systems required"),
+    bul("All roof work employees must be OSHA certified for that work type"),
+    sp(80),h2("3.2 PPE REQUIREMENTS"),
+    par("All workers require: approved eye protection, hardhat, appropriate footwear, long pants, shirts, and ear protection. The FPPM is responsible for enforcing PPE requirements."),
+    sp(80),h2("3.3 HOT WORK REQUIREMENTS"),
+    par(`Any construction activity involving high heat, spark, laser, or flame shall comply with NFPA 51B and the requirements of the ${fd}.`),
+    bul(`NO HOT WORK without proper permitting from ${fd} and direct sign-off from the FPPM`),
+    bul("Any required fire watch shall be provided by the contractor whose work requires it"),
+    bul(`FPPM will coordinate system shutdowns with ${fd} prior to any hot work`),
+    sp(80),h2("3.4 SMOKING"),par("FPPM will enforce a strict no-smoking policy on and around the property at all times."),
+    sp(80),h2("3.5 SPECIAL CIRCUMSTANCES"),
+    par(data.specialCircumstances||"No special circumstances identified at this time. FPPM shall amend this plan if special circumstances arise during construction."),pb(),
+
+    // Section 4
+    h1("4. FIRE PROTECTION"),
+    h2("4.1 RESPONSIBILITIES"),
+    par(`The developer/General Contractor is responsible for implementing this NFPA-241 safety plan and designating the FPPM. The FPPM is ${fppm.name||"[FPPM NAME]"} (${fppm.phone||"[PHONE]"}).`),
+    bul("Walking the project site each morning for security breaches or unsafe material storage"),
+    bul("Confirming no large quantities of debris are stored inside or outside the building"),
+    bul("Reviewing work areas for conformance with this plan"),
+    bul("Maintaining the active permit log, hot works log, and weekly safety checklists (Annex D and E)"),
+    sp(80),h2("4.2 PRE-INCIDENT PLANNING"),
+    par(`FPPM will be familiar with all aspects of the project and provide requested information to ${fd} Fire Prevention and ${ahj}.`),
+    bul(`Post emergency contact list next to building permit — visible from exterior`),
+    bul(`At any time conditions change, ${fd} shall receive an updated copy without being asked`),
+    bul("Approved first aid kits will be provided in a central location"),
+    sp(80),h2("4.3 FIRE DEPARTMENT SITE ACCESS"),
+    par(`Emergency response vehicles will enter the site via ${data.accessStreet||"[ACCESS STREET]"}. Fire lanes are ${data.firelanesExisting?"existing":"to be established per the site plan"}. Primary entrance is via front door Knox Box.`),
+    kv("Knox Box Location",data.knoxBoxLocation||"[Main entrance]"),
+    sp(80),h2("4.4 EMERGENCY MUSTER POINTS"),
+    bul(`Primary Muster Point (A): ${data.musterPointA||"[DESCRIBE — See Annex B]"}`),
+    bul(`Secondary Muster Point (B): ${data.musterPointB||"[DESCRIBE — See Annex B]"}`),
+    sp(80),h2("4.5 EXISTING LIFE SAFETY SYSTEMS"),
+    par(data.existingSystems||"During construction the building shall employ fire extinguishers throughout per PIP plans."),
+    ...(data.hasExistingAlarm?[par(`Existing fire alarm: ${data.existingAlarmDesc||"[describe]"}. FPPM will coordinate impairments with ${fd}.`)]:[]),
+    ...(data.hasExistingSprinkler?[par(`Existing sprinkler: ${data.existingSprinklerDesc||"[describe]"}. Impairments managed per NFPA 25 and coordinated with ${fd}.`)]:[]),
+    sp(80),h2("4.6 SITE FIRE ALARM NOTIFICATION"),
+    par("Site fire alarm notification shall be via air horn located on site. Upon activation, all workers will proceed to Muster Point A unless instructed otherwise by the FPPM."),
+    sp(80),h2("4.7 FIRE COMMAND POST"),
+    par(`Located on the ground floor of ${data.projectAddress||"[PROJECT ADDRESS]"}. The command post will contain:`),
+    bul("Emergency Contact List"),bul("Master NFPA-241 Plan"),bul("General Contractor Project Narrative"),
+    bul("Set of Current Floor Plans"),bul("Key Access (Knox Box keys)"),bul("\"FIRE COMMAND POST\" Signage"),pb(),
+
+    // Section 5
+    h1("5. SAFEGUARDING FOR CONSTRUCTION, ALTERATION & DEMOLITION"),
+    h2("5.1 EMERGENCY PROTOCOL"),
+    par("In the event of an emergency, all workers will evacuate the building and assemble at one of the muster points. FPPM will meet emergency responders at the site entrance."),
+    h3("FIRE EMERGENCY:"),par("Fire extinguishers throughout site for small incidents. For larger hazards, evacuate and call 911 from outside. No worker shall re-enter until permitted by the FPPM or fire department."),
+    h3("MEDICAL EMERGENCY:"),par("Do not move the victim; make them comfortable until trained responders arrive."),
+    sp(80),h2("5.2 TRAINING"),
+    par("FPPM shall train all workers on emergency response and preparedness. Each contractor will conduct tool box talks at the start of each work day."),sp(80),
+
+    ...(data.isOccupied?[
+      h2("5.3 OCCUPIED BUILDING CONSTRUCTION & PHASED INSTALLATION PLAN"),
+      h3("5.3.1 General"),
+      par(`This project involves construction within an existing, occupied ${data.buildingUse||"building"}. The building will remain operational during the installation of ${data.scopeOfWork||"the fire protection and life safety systems"}. All activities shall maintain continuous life safety, fire protection, and required means of egress.`),
+      h3("5.3.2 Coordination with Occupied Building Operations"),
+      par("Construction activities shall be coordinated with property management to minimize impacts to occupants. Occupants shall be provided advance notice (minimum 24 hours; minimum 72 hours for temporary relocation) of activities that may affect access, alarms, noise, or relocations."),
+      h3("5.3.3 Phased Construction Approach"),
+      par("Construction shall be executed using a phased, floor-by-floor approach. Only one phase shall be active at a time unless otherwise approved in writing."),
+      bul("Identification of the specific floor or area under construction"),
+      bul("Temporary relocation of occupants from the affected floor"),
+      bul("Establishment of construction barriers and access controls"),
+      bul("Installation of sprinkler and fire alarm rough-in for the designated floor"),
+      bul("Restoration of the area and return of occupants upon phase completion"),
+      ...(data.phaseDescription?[par(data.phaseDescription)]:[]),
+      h3("5.3.4 Fire Protection and Life Safety During Phased Work"),
+      par("All required means of egress shall remain available, unobstructed, and clearly marked at all times. Any impairment shall be managed through a formal impairment process including notification, compensatory measures, and prompt restoration."),
+      h3("5.3.5 Impairments and Compensatory Measures"),
+      bul(`Notification to ${fd} when applicable`),bul("Notification to building occupants as appropriate"),
+      bul("Implementation of a fire watch when required (see Annex F)"),bul("Restoration of systems to service as soon as practicable"),
+      par("All impairments and restorations shall be documented by the FPPM."),
+      h3("5.3.6 Hot Work and Housekeeping"),
+      par("Hot work per NFPA 51B only. Combustible debris removed daily. Fire extinguishers in all active construction areas."),sp(80),
+    ]:[]),
+
+    h2("5.4 EVACUATION PLANS"),par("The owner and FPPM will coordinate an emergency evacuation plan and post updated egress maps throughout the construction area."),
+    sp(80),h2("5.5 EVACUATION SIGNALING & EGRESS REQUIREMENTS"),
+    par("FPPM shall maintain clear egress passage at all times. All paths shall be clearly lit with emergency lighting throughout construction. Exit signs shall remain illuminated at all times."),pb(),
+
+    // Annex A
+    h1("ANNEX A — PROJECT LOCATION MAP"),
+    par(`[LOCUS MAP — ${data.projectAddress||"PROJECT ADDRESS"} — INSERT SCREENSHOT HERE]`,{italic:true,color:"94a3b8"}),sp(300),
+    par(`[NEAREST FIRE DEPARTMENT — ${fd} — INSERT MAP SCREENSHOT HERE]`,{italic:true,color:"94a3b8"}),
+    kv("Nearest Station",data.nearestFireStation||(fd+" — [insert address]")),
+    kv("Estimated Response Time",data.responseTime||"[confirm with fire department]"),sp(280),
+    par("[FIRST RESPONDER VANTAGE POINT — STREET VIEW — INSERT PHOTO HERE]",{italic:true,color:"94a3b8"}),pb(),
+
+    // Annex B
+    h1("ANNEX B — EMERGENCY ACCESS / PRE-INCIDENT PLAN (PIP)"),
+    par("[FLOOR PLAN — MARK ACCESS POINTS, FIRE HYDRANTS, AND MUSTER POINTS — INSERT HERE]",{italic:true,color:"94a3b8"}),sp(300),
+    kv("Primary Access",data.accessStreet||"[ACCESS STREET]"),
+    kv("Knox Box Location",data.knoxBoxLocation||"[Main entrance]"),
+    kv("Nearest Fire Hydrant",data.nearestHydrant||"[confirm location with FD]"),
+    kv("Muster Point A",data.musterPointA||"[front of building]"),
+    kv("Muster Point B",data.musterPointB||"[rear of property]"),
+    sp(80),h2("FIRE HYDRANT LOCATIONS"),
+    par("[FIRE HYDRANT LOCATION MAP — INSERT GOOGLE MAPS SCREENSHOT ANNOTATED WITH RED ARROWS]",{italic:true,color:"94a3b8"}),pb(),
+
+    // Annex C
+    h1("ANNEX C — PERMIT LOG"),
+    par("FPPM will update this log throughout construction. Each entry shall contain: Contractor, Location, Description, Hazard Analysis, and Permit Number."),
+    sp(60),permitTable,pb(),
+
+    // Annex D
+    h1("ANNEX D — NFPA-241 WEEKLY SAFETY CHECKLIST"),
+    new Paragraph({spacing:{after:100},children:[run("Date: _________________________    "),run("Building Permit No.: _________________________")]}),
+    new Paragraph({spacing:{after:80},children:[run("Inspector Name: _________________________")]}),
+    n241Table,pb(),
+
+    // Annex E
+    h1("ANNEX E — FIRE CODE OF MASSACHUSETTS WEEKLY CHECKLIST"),
+    new Paragraph({spacing:{after:100},children:[run("Date: _________________________    "),run("Building Permit No.: _________________________")]}),
+    new Paragraph({spacing:{after:80},children:[run("Inspector Name: _________________________")]}),
+    fcTable,
+
+    // Annex F (occupied only)
+    ...(data.isOccupied?[
+      pb(),h1("ANNEX F — 527 CMR 10.9 EMERGENCY PLAN COORDINATION (OCCUPIED BUILDING)"),
+      h2("F.1 GENERAL"),
+      par(`The building is required to maintain an Emergency Plan in accordance with 527 CMR 10.9 due to its occupied ${data.buildingUse||"use"}. That Emergency Plan remains in effect throughout the duration of construction. This Annex summarizes how the Emergency Plan is coordinated with this NFPA 241 Construction Safety Plan.`),
+      sp(80),h2("F.2 LOCATION OF EMERGENCY PLAN"),
+      bul(`Fire Command Post — Ground floor of ${data.projectAddress||"[ADDRESS]"}`),
+      bul("Property Management Office"),bul(`Available to ${fd} upon request`),
+      sp(80),h2("F.3 EMERGENCY CONTACTS"),
+      new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[
+        hRow([["Name",33],["Role",33],["Phone / Contact",34]]),
+        ...data.contacts.map(c=>dRow([c.name,c.role,c.phone],[33,33,34])),
+        dRow([fd,"AHJ — Fire Prevention","911 / [Confirm with FD]"],[33,33,34])
+      ]}),
+      sp(100),h2("F.4 OCCUPANT NOTIFICATION DURING CONSTRUCTION"),
+      bul("Planned construction phases and anticipated schedule for each floor"),
+      bul("Temporary relocation requirements (minimum 72 hours advance written notice)"),
+      bul("Scheduled fire alarm testing or temporary alarm disablement"),
+      bul("Any temporary change to egress routes or exits"),
+      bul("Planned water shutdowns affecting sprinkler system installation"),
+      sp(80),h2("F.5 EGRESS AND EVACUATION DURING CONSTRUCTION"),
+      par("All required means of egress shall remain available, unobstructed, fully lit, and clearly marked at all times. Construction materials and debris shall not be stored in any egress corridor, stairway, or within 5 feet of any exit door."),
+      bul("Upon activation of fire alarm or air horn, all occupants shall evacuate to the nearest available exit"),
+      bul("Occupants shall not use elevators — all egress via stairways only"),
+      bul(`Occupants assemble at: ${data.musterPointA||"[OCCUPANT MUSTER POINT]"}`),
+      bul(`FPPM conducts occupant headcount and reports to ${fd}`),
+      sp(80),h2("F.6 FIRE ALARM, SPRINKLER, AND SYSTEM IMPAIRMENTS"),
+      par(`Any impairment to fire alarm, detection, notification, or sprinkler systems shall be managed through a formal impairment process per NFPA 241, NFPA 25, and 527 CMR. FPPM shall notify ${fd} Fire Prevention before any planned impairment.`),
+      sp(80),h2("F.7 FIRE WATCH PROCEDURES"),
+      par("A fire watch shall be established whenever:"),
+      bul("Any portion of the fire alarm system serving occupied areas is out of service"),
+      bul("Any portion of the sprinkler system serving occupied areas is out of service"),
+      bul("Hot work is being performed in or adjacent to occupied areas"),
+      h3("Fire Watch Requirements (NFPA 241 §5.1.3.1):"),
+      bul("Fire watch personnel shall be DEDICATED — no other duties while on watch"),
+      bul("Complete patrol of impaired zone every 15 minutes minimum"),
+      bul("Each patrol logged: time, areas inspected, inspector name"),
+      bul("Watch maintained continuously through impairment, including overnight for occupied sleeping areas"),
+      bul("Watch not terminated until system fully restored and verified by function test"),
+      bul("Personnel shall carry: charged 2A:10B:C extinguisher, communication device, flashlight, fire watch log, and floor plans"),
+      sp(80),h2("F.8 HOW THE PROPERTY WILL CONTINUE TO OPERATE"),
+      par(data.occupiedOperationNarrative||"Only one floor or zone shall be in active construction at a time. Occupants on the active construction floor shall be temporarily relocated for the duration of that floor's active construction phase. Life safety conditions on all non-construction floors shall remain fully intact and unimpaired throughout construction."),
+      sp(80),h2(`F.9 COORDINATION WITH ${fd.toUpperCase()}`),
+      par(`The FPPM (${fppm.name||"[FPPM NAME]"} — ${fppm.phone||"[PHONE]"}) shall serve as the single point of contact between the construction project and ${fd} Fire Prevention.`),
+      bul(`FPPM shall meet with ${fd} for a pre-construction briefing before any work commences on site`),
+      bul(`FPPM shall provide ${fd} with an updated copy of this plan any time a material change is made`),
+      bul(`${fd} shall be notified at least 24 hours in advance of any planned system impairment or hot work`),
+      bul(`${fd} shall be invited to all final system acceptance tests`),
+    ]:[]),
+
+    // Certification
+    pb(),h1("CERTIFICATION AND SIGNATURE"),sp(80),
+    par(`This NFPA 241 Construction Safety Plan has been prepared for: ${data.projectAddress||"[PROJECT ADDRESS]"}`),sp(120),
+    par("Prepared and Sealed By:",{bold:true}),par("Jason Kahan P.E."),
+    par("CAP Design Group / JFP Solutions, Inc."),par("335 Washington St. Suite 1114, Woburn, MA 01801"),
+    par("MA Fire Protection PE License No. 48388"),par("617-644-0014  |  admin@capcofire.com  |  capcofire.com"),
+    sp(100),par("[PE SEAL — INSERT HERE]",{italic:true,color:"94a3b8"}),sp(120),
+    par("_________________________________"),par("Signature — Jason Kahan P.E."),par("Date: _______________________"),sp(160),
+    par("Fire Protection Program Manager (FPPM):",{bold:true}),
+    par(fppm.name||"[FPPM NAME]"),par(fppm.phone||"[PHONE]"),sp(120),
+    par("_________________________________"),par("FPPM Signature"),par("Date: _______________________"),
+  ];
+
+  const doc = new Document({
+    sections:[{
+      properties:{page:{margin:{top:720,bottom:720,left:1008,right:1008}}},
+      headers:{default:new Header({children:[new Paragraph({
+        border:{bottom:{color:DRED,size:4,style:BorderStyle.SINGLE}},
+        children:[run(`CAP Design Group  |  NFPA-241 Construction Safety Plan  |  ${data.projectAddress||"[PROJECT ADDRESS]"}`,{size:8,color:"94a3b8"})]
+      })]})},
+      footers:{default:new Footer({children:[new Paragraph({
+        alignment:AlignmentType.CENTER,
+        border:{top:{color:"e2e8f0",size:4,style:BorderStyle.SINGLE}},
+        children:[run("617-644-0014  |  admin@capcofire.com  |  capcofire.com  |  PE No. 48388",{size:8,color:"94a3b8"})]
+      })]})},
+      children
+    }]
+  });
+
+  return await Packer.toBlob(doc);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────
+renderStep();
+</script>
+
+
+</body></html>
