@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFPA 241 Plan Generator — CAP Design Group</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:    #DC2626;
+    --dark:   #1E293B;
+    --mid:    #334155;
+    --muted:  #64748B;
+    --border: #CBD5E1;
+    --bg:     #F8FAFC;
+    --white:  #FFFFFF;
+    --success:#16A34A;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--dark);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 12px rgba(0,0,0,.25);
+  }
+  .logo { display: flex; align-items: center; gap: .75rem; }
+  .logo-mark {
+    width: 36px; height: 36px; background: var(--red);
+    border-radius: 6px; display: flex; align-items: center;
+    justify-content: center; font-family: 'DM Mono', monospace;
+    font-weight: 500; color: #fff; font-size: .85rem; letter-spacing: -.5px;
+  }
+  .logo-text { color: #fff; font-weight: 600; font-size: 1rem; letter-spacing: -.2px; }
+  .logo-sub  { color: #94A3B8; font-size: .75rem; font-weight: 400; }
+  .badge {
+    background: rgba(220,38,38,.15); color: #FCA5A5;
+    border: 1px solid rgba(220,38,38,.3);
+    padding: .25rem .75rem; border-radius: 999px;
+    font-size: .7rem; font-weight: 600; letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+
+  /* ── Layout ── */
+  main { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  .page-title { margin-bottom: 2rem; }
+  .page-title h1 { font-size: 1.6rem; font-weight: 700; color: var(--dark); }
+  .page-title p  { color: var(--muted); font-size: .9rem; margin-top: .35rem; }
+
+  /* ── Progress ── */
+  .progress-bar {
+    display: flex; gap: 0; margin-bottom: 2.5rem;
+    border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .step-tab {
+    flex: 1; padding: .6rem .5rem; text-align: center;
+    background: var(--white); cursor: pointer;
+    font-size: .72rem; font-weight: 600; color: var(--muted);
+    border-right: 1px solid var(--border);
+    transition: all .2s; letter-spacing: .2px; text-transform: uppercase;
+  }
+  .step-tab:last-child { border-right: none; }
+  .step-tab.active { background: var(--dark); color: #fff; }
+  .step-tab.done   { background: #F0FDF4; color: var(--success); }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .card-title {
+    font-size: .7rem; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--red);
+    margin-bottom: 1.25rem; padding-bottom: .75rem;
+    border-bottom: 2px solid #FEE2E2;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .card-title::before {
+    content: ''; display: block; width: 8px; height: 8px;
+    background: var(--red); border-radius: 2px;
+  }
+
+  /* ── Form elements ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  .span-2 { grid-column: span 2; }
+
+  .field { display: flex; flex-direction: column; gap: .4rem; }
+  label  { font-size: .78rem; font-weight: 600; color: var(--mid); }
+  label span { color: var(--red); margin-left: 2px; }
+
+  input[type=text], input[type=date], select, textarea {
+    width: 100%; padding: .6rem .85rem;
+    border: 1.5px solid var(--border);
+    border-radius: 7px; font-family: inherit;
+    font-size: .875rem; color: var(--dark);
+    background: var(--white);
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--dark);
+    box-shadow: 0 0 0 3px rgba(30,41,59,.08);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .75rem 1rem; background: var(--bg);
+    border: 1.5px solid var(--border); border-radius: 8px;
+  }
+  .toggle-label { font-size: .875rem; font-weight: 500; }
+  .toggle-sub   { font-size: .75rem; color: var(--muted); }
+  .toggle {
+    width: 44px; height: 24px; background: var(--border);
+    border-radius: 999px; cursor: pointer; position: relative;
+    transition: background .2s; flex-shrink: 0;
+    border: none; outline: none;
+  }
+  .toggle.on { background: var(--dark); }
+  .toggle::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; background: #fff;
+    border-radius: 50%; transition: left .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle.on::after { left: 23px; }
+
+  /* Contact rows */
+  .contact-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr auto;
+    gap: .75rem; align-items: end; margin-bottom: .75rem;
+  }
+  .btn-remove {
+    width: 36px; height: 36px; border: 1.5px solid #FEE2E2;
+    background: #FFF5F5; color: var(--red); border-radius: 7px;
+    cursor: pointer; font-size: 1.1rem; display: flex;
+    align-items: center; justify-content: center; transition: all .15s;
+    flex-shrink: 0;
+  }
+  .btn-remove:hover { background: var(--red); color: #fff; }
+  .btn-add {
+    padding: .55rem 1rem; border: 1.5px dashed var(--border);
+    background: transparent; border-radius: 7px; cursor: pointer;
+    font-size: .8rem; font-weight: 600; color: var(--muted);
+    font-family: inherit; transition: all .15s; width: 100%;
+    margin-top: .25rem;
+  }
+  .btn-add:hover { border-color: var(--dark); color: var(--dark); background: var(--bg); }
+
+  /* Navigation buttons */
+  .nav-row {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-top: 2rem; gap: 1rem;
+  }
+  .btn-back {
+    padding: .7rem 1.5rem; border: 1.5px solid var(--border);
+    background: var(--white); border-radius: 8px; cursor: pointer;
+    font-size: .875rem; font-weight: 600; color: var(--mid);
+    font-family: inherit; transition: all .15s;
+  }
+  .btn-back:hover { border-color: var(--dark); color: var(--dark); }
+  .btn-next {
+    padding: .7rem 2rem; border: none;
+    background: var(--dark); color: #fff;
+    border-radius: 8px; cursor: pointer;
+    font-size: .875rem; font-weight: 600;
+    font-family: inherit; transition: all .15s; margin-left: auto;
+  }
+  .btn-next:hover { background: var(--red); }
+
+  /* Generate button */
+  .btn-generate {
+    width: 100%; padding: 1rem; border: none;
+    background: var(--red); color: #fff; border-radius: 10px;
+    cursor: pointer; font-size: 1rem; font-weight: 700;
+    font-family: inherit; letter-spacing: .3px;
+    transition: all .2s; margin-top: 1.5rem;
+    display: flex; align-items: center; justify-content: center; gap: .75rem;
+  }
+  .btn-generate:hover { background: #B91C1C; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(220,38,38,.35); }
+  .btn-generate:disabled { background: var(--muted); transform: none; box-shadow: none; cursor: not-allowed; }
+  .btn-generate svg { width: 20px; height: 20px; }
+
+  /* Step panels */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  /* Review table */
+  .review-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  .review-table td { padding: .5rem .75rem; border-bottom: 1px solid var(--bg); }
+  .review-table td:first-child { font-weight: 600; color: var(--mid); width: 40%; }
+  .review-table tr:last-child td { border-bottom: none; }
+
+  .hint { font-size: .75rem; color: var(--muted); margin-top: .25rem; }
+
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .span-2 { grid-column: span 1; }
+    .contact-row { grid-template-columns: 1fr auto; }
+    .contact-row .field:nth-child(2),
+    .contact-row .field:nth-child(3) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">CAP</div>
+    <div>
+      <div class="logo-text">CAP Design Group</div>
+      <div class="logo-sub">Fire Protection Engineering</div>
+    </div>
+  </div>
+  <div class="badge">NFPA 241 Generator</div>
+</header>
+
+<main>
+  <div class="page-title">
+    <h1>NFPA 241 Construction Safety Plan</h1>
+    <p>Complete each section — the plan generates as a formatted Word document ready to seal and submit.</p>
+  </div>
+
+  <!-- Progress tabs -->
+  <div class="progress-bar" id="progressBar">
+    <div class="step-tab active" onclick="goStep(1)">1. Project</div>
+    <div class="step-tab" onclick="goStep(2)">2. Building</div>
+    <div class="step-tab" onclick="goStep(3)">3. Contacts</div>
+    <div class="step-tab" onclick="goStep(4)">4. Fire Dept</div>
+    <div class="step-tab" onclick="goStep(5)">5. Site</div>
+    <div class="step-tab" onclick="goStep(6)">6. Systems</div>
+    <div class="step-tab" onclick="goStep(7)">7. Review</div>
+  </div>
+
+  <!-- ── STEP 1: Project Info ── -->
+  <div class="step-panel active" id="step1">
+    <div class="card">
+      <div class="card-title">Project Information</div>
+      <div class="grid-2" style="gap:1rem">
+        <div class="field span-2">
+          <label>Project Address <span>*</span></label>
+          <input type="text" id="projectAddress" placeholder="123 Main St, Boston, MA 02101">
+        </div>
+        <div class="field">
+          <label>Plan Date</label>
+          <input type="date" id="planDate">
+        </div>
+        <div class="field">
+          <label>Revision</label>
+          <input type="text" id="revision" placeholder="Rev. 0 — Initial Submission">
+        </div>
+        <div class="field span-2">
+          <label>Scope of Work <span>*</span></label>
+          <textarea id="scopeOfWork" placeholder="e.g. Installation of new NFPA 13 fire sprinkler system and NFPA 72 fire alarm system throughout all floors"></textarea>
+        </div>
+        <div class="field span-2">
+          <label>Special Circumstances</label>
+          <textarea id="specialCircumstances" placeholder="Leave blank if none — will auto-populate with standard language"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <div></div>
+      <button class="btn-next" onclick="goStep(2)">Next: Building Info →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: Building ── -->
+  <div class="step-panel" id="step2">
+    <div class="card">
+      <div class="card-title">Building Description</div>
+      <div class="grid-2" style="gap:1rem">
+        <div class="field">
+          <label>Building Use / Occupancy</label>
+          <input type="text" id="buildingUse" placeholder="e.g. Multifamily Residential, Office, Hotel">
+        </div>
+        <div class="field">
+          <label>Use Group</label>
+          <select id="useGroup">
+            <option value="">— Select —</option>
+            <option>A-1</option><option>A-2</option><option>A-3</option><option>A-4</option><option>A-5</option>
+            <option>B</option><option>E</option><option>F-1</option><option>F-2</option>
+            <option>H-1</option><option>H-2</option><option>H-3</option><option>H-4</option><option>H-5</option>
+            <option>I-1</option><option>I-2</option><option>I-3</option><option>I-4</option>
+            <option>M</option>
+            <option selected>R-1</option><option>R-2</option><option>R-3</option><option>R-4</option>
+            <option>S-1</option><option>S-2</option><option>U</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Construction Type</label>
+          <select id="constructionType">
+            <option value="">— Select —</option>
+            <option>Type I-A</option><option>Type I-B</option>
+            <option>Type II-A</option><option>Type II-B</option>
+            <option>Type III-A</option><option>Type III-B</option>
+            <option>Type IV-A</option><option>Type IV-B</option><option>Type IV-C</option><option>Type IV-HT</option>
+            <option selected>Type V-A</option><option>Type V-B</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Building Height</label>
+          <input type="text" id="buildingHeight" placeholder='e.g. 35&apos;-0"'>
+        </div>
+        <div class="field">
+          <label>Stories Above Grade</label>
+          <input type="text" id="storiesAbove" placeholder="e.g. 3">
+        </div>
+        <div class="field">
+          <label>Stories Below Grade</label>
+          <input type="text" id="storiesBelow" placeholder="e.g. 1">
+        </div>
+        <div class="field">
+          <label>Occupant Load (Est.)</label>
+          <input type="text" id="occupantLoad" placeholder="e.g. 24 residents">
+        </div>
+        <div class="field">
+          <label>Hazardous Materials</label>
+          <input type="text" id="hazardousMaterials" placeholder="None, or describe">
+        </div>
+        <div class="field span-2">
+          <label>Building Summary <span style="font-weight:400;color:var(--muted)">(optional — auto-generates if blank)</span></label>
+          <textarea id="buildingSummary" placeholder="Leave blank to auto-generate from the fields above"></textarea>
+        </div>
+        <div class="field span-2">
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Building Occupied During Construction?</div>
+              <div class="toggle-sub">Adds Section 5.3 Phased Plan + Annex F (527 CMR 10.9)</div>
+            </div>
+            <button class="toggle" id="toggleOccupied" onclick="toggleField('isOccupied', this)" type="button"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(1)">← Back</button>
+      <button class="btn-next" onclick="goStep(3)">Next: Contacts →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: Contacts ── -->
+  <div class="step-panel" id="step3">
+    <div class="card">
+      <div class="card-title">Project Contacts & Stakeholders</div>
+      <p class="hint" style="margin-bottom:1rem">Add all project contacts. The first FPPM/Fire Prevention contact becomes the designated FPPM throughout the plan.</p>
+      <div id="contactRows"></div>
+      <button class="btn-add" onclick="addContact()">+ Add Contact</button>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(2)">← Back</button>
+      <button class="btn-next" onclick="goStep(4)">Next: Fire Dept →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: Fire Dept & AHJ ── -->
+  <div class="step-panel" id="step4">
+    <div class="card">
+      <div class="card-title">Authority Having Jurisdiction (AHJ)</div>
+      <div class="grid-2" style="gap:1rem">
+        <div class="field">
+          <label>City / Town</label>
+          <input type="text" id="city" placeholder="e.g. Boston" oninput="autofillFD()">
+        </div>
+        <div class="field">
+          <label>AHJ Name</label>
+          <input type="text" id="ahjName" placeholder="e.g. City of Boston Inspectional Services Dept.">
+        </div>
+        <div class="field">
+          <label>Fire Department Name</label>
+          <input type="text" id="fdName" placeholder="e.g. Boston Fire Department">
+        </div>
+        <div class="field">
+          <label>Fire Department Address</label>
+          <input type="text" id="fdAddress" placeholder="e.g. 115 Southampton St, Boston, MA 02118">
+        </div>
+        <div class="field">
+          <label>Nearest Fire Station</label>
+          <input type="text" id="nearestFireStation" placeholder="e.g. Station 1 — 400 Broadway, Revere (0.8 mi)">
+        </div>
+        <div class="field">
+          <label>Estimated Response Time</label>
+          <input type="text" id="responseTime" placeholder="e.g. 5–7 minutes">
+        </div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(3)">← Back</button>
+      <button class="btn-next" onclick="goStep(5)">Next: Site Info →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: Site ── -->
+  <div class="step-panel" id="step5">
+    <div class="card">
+      <div class="card-title">Site & Access Information</div>
+      <div class="grid-2" style="gap:1rem">
+        <div class="field">
+          <label>Primary FD Access Street</label>
+          <input type="text" id="accessStreet" placeholder="e.g. Main St. — front of building">
+        </div>
+        <div class="field">
+          <label>Knox Box Location</label>
+          <input type="text" id="knoxBoxLocation" placeholder="e.g. Main entrance, front door">
+        </div>
+        <div class="field">
+          <label>Nearest Fire Hydrant</label>
+          <input type="text" id="nearestHydrant" placeholder="e.g. SW corner of Main St. & Elm Ave.">
+        </div>
+        <div class="field">
+          <label>Muster Point A (Primary)</label>
+          <input type="text" id="musterPointA" placeholder="e.g. Sidewalk in front of building">
+        </div>
+        <div class="field">
+          <label>Muster Point B (Secondary)</label>
+          <input type="text" id="musterPointB" placeholder="e.g. Rear parking lot">
+        </div>
+        <div class="field span-2">
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Fire Lanes Existing?</div>
+              <div class="toggle-sub">If No, plan will state lanes are to be established per site plan</div>
+            </div>
+            <button class="toggle on" id="toggleFirelanes" onclick="toggleField('firelanesExisting', this)" type="button"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(4)">← Back</button>
+      <button class="btn-next" onclick="goStep(6)">Next: Systems →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 6: Existing Systems ── -->
+  <div class="step-panel" id="step6">
+    <div class="card">
+      <div class="card-title">Existing Life Safety Systems</div>
+      <div class="field">
+        <label>Existing Systems Description</label>
+        <textarea id="existingSystems" style="min-height:120px" placeholder="e.g. The building is currently unsprinklered. Portable fire extinguishers will be maintained throughout construction per NFPA 10. OR: The building is equipped with an existing NFPA 13 sprinkler system. Impairments will be coordinated with the AHJ..."></textarea>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(5)">← Back</button>
+      <button class="btn-next" onclick="goStep(7)">Review & Generate →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 7: Review & Generate ── -->
+  <div class="step-panel" id="step7">
+    <div class="card">
+      <div class="card-title">Review & Confirm</div>
+      <table class="review-table" id="reviewTable"></table>
+    </div>
+    <button class="btn-generate" id="generateBtn" onclick="generateDoc()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      Generate NFPA 241 Plan (.docx)
+    </button>
+    <div class="nav-row" style="margin-top:1rem">
+      <button class="btn-back" onclick="goStep(6)">← Back</button>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  projectAddress:'', planDate:'', revision:'Rev. 0 — Initial Submission',
+  scopeOfWork:'', specialCircumstances:'', buildingUse:'', useGroup:'R-2',
+  constructionType:'Type V-B', buildingHeight:'', storiesAbove:'', storiesBelow:'',
+  occupantLoad:'', hazardousMaterials:'None', buildingSummary:'',
+  isOccupied: false,
+  contacts:[{name:'',role:'Fire Prevention Manager (FPPM)',phone:''}],
+  city:'', ahjName:'', fdName:'', fdAddress:'', nearestFireStation:'', responseTime:'',
+  accessStreet:'', knoxBoxLocation:'', nearestHydrant:'',
+  musterPointA:'', musterPointB:'', firelanesExisting: true,
+  existingSystems:''
+};
+
+let currentStep = 1;
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function goStep(n) {
+  collectCurrentStep();
+  document.getElementById('step' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step' + n).classList.add('active');
+  // Update tabs
+  document.querySelectorAll('.step-tab').forEach((t, i) => {
+    t.classList.remove('active','done');
+    if (i + 1 === n) t.classList.add('active');
+    else if (i + 1 < n) t.classList.add('done');
+  });
+  if (n === 7) buildReview();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ── Collect form data into state ───────────────────────────────────────────
+function collectCurrentStep() {
+  const ids = ['projectAddress','planDate','revision','scopeOfWork','specialCircumstances',
+               'buildingUse','useGroup','constructionType','buildingHeight','storiesAbove',
+               'storiesBelow','occupantLoad','hazardousMaterials','buildingSummary',
+               'city','ahjName','fdName','fdAddress','nearestFireStation','responseTime',
+               'accessStreet','knoxBoxLocation','nearestHydrant','musterPointA','musterPointB',
+               'existingSystems'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) state[id] = el.value;
+  });
+  // collect contacts
+  state.contacts = [];
+  document.querySelectorAll('.contact-row').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    if (inputs[0].value.trim()) {
+      state.contacts.push({name:inputs[0].value,role:inputs[1].value,phone:inputs[2].value});
+    }
+  });
+}
+
+// ── Toggle ─────────────────────────────────────────────────────────────────
+function toggleField(field, btn) {
+  state[field] = !state[field];
+  btn.classList.toggle('on', state[field]);
+}
+
+// ── Contacts ───────────────────────────────────────────────────────────────
+function renderContacts() {
+  const container = document.getElementById('contactRows');
+  container.innerHTML = '';
+  state.contacts.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'contact-row';
+    div.innerHTML = `
+      <div class="field"><label>Name</label><input type="text" value="${c.name||''}" placeholder="Full Name"></div>
+      <div class="field"><label>Role</label><input type="text" value="${c.role||''}" placeholder="e.g. FPPM, Owner, GC"></div>
+      <div class="field"><label>Phone / Email</label><input type="text" value="${c.phone||''}" placeholder="617-xxx-xxxx"></div>
+      <button class="btn-remove" onclick="removeContact(${i})" type="button">×</button>
+    `;
+    container.appendChild(div);
+  });
+}
+function addContact() {
+  state.contacts.push({name:'',role:'',phone:''});
+  renderContacts();
+}
+function removeContact(i) {
+  state.contacts.splice(i,1);
+  renderContacts();
+}
+
+// ── Auto-fill FD from city ─────────────────────────────────────────────────
+const FD_MAP = {
+  'boston':     {fd:'Boston Fire Department',   ahj:'City of Boston Inspectional Services Department',   addr:'115 Southampton St, Boston, MA 02118'},
+  'revere':     {fd:'Revere Fire Department',   ahj:'City of Revere Inspectional Services Department',   addr:'400 Broadway, Revere, MA 02151'},
+  'cambridge':  {fd:'Cambridge Fire Department',ahj:'City of Cambridge Inspectional Services Department',addr:'491 Broadway, Cambridge, MA 02138'},
+  'somerville': {fd:'Somerville Fire Department',ahj:'City of Somerville Inspectional Services Department',addr:''}, 
+  'quincy':     {fd:'Quincy Fire Department',   ahj:'City of Quincy Inspectional Services Department',   addr:''},
+  'malden':     {fd:'Malden Fire Department',   ahj:'City of Malden Inspectional Services Department',   addr:''},
+  'medford':    {fd:'Medford Fire Department',  ahj:'City of Medford Inspectional Services Department',  addr:''},
+  'woburn':     {fd:'Woburn Fire Department',   ahj:'City of Woburn Inspectional Services Department',   addr:''},
+  'lynn':       {fd:'Lynn Fire Department',     ahj:'City of Lynn Inspectional Services Department',     addr:''},
+  'everett':    {fd:'Everett Fire Department',  ahj:'City of Everett Inspectional Services Department',  addr:''},
+  'winthrop':   {fd:'Winthrop Fire Department', ahj:'Town of Winthrop Building Department',              addr:''},
+  'chelsea':    {fd:'Chelsea Fire Department',  ahj:'City of Chelsea Inspectional Services Department',  addr:''},
+};
+function autofillFD() {
+  const city = document.getElementById('city').value.trim().toLowerCase();
+  const match = FD_MAP[city];
+  if (match) {
+    const fdEl  = document.getElementById('fdName');
+    const ahjEl = document.getElementById('ahjName');
+    const addrEl= document.getElementById('fdAddress');
+    if (!fdEl.value)   fdEl.value   = match.fd;
+    if (!ahjEl.value)  ahjEl.value  = match.ahj;
+    if (!addrEl.value) addrEl.value = match.addr;
+  }
+}
+
+// ── Review table ───────────────────────────────────────────────────────────
+function buildReview() {
+  collectCurrentStep();
+  const rows = [
+    ['Project Address',   state.projectAddress || '—'],
+    ['Plan Date',         state.planDate || '—'],
+    ['Revision',          state.revision || '—'],
+    ['Scope of Work',     (state.scopeOfWork||'—').substring(0,80) + (state.scopeOfWork?.length>80?'…':'')],
+    ['Building Use',      state.buildingUse || '—'],
+    ['Use Group',         state.useGroup || '—'],
+    ['Construction Type', state.constructionType || '—'],
+    ['Building Height',   state.buildingHeight || '—'],
+    ['Stories Above/Below',`${state.storiesAbove||'—'} / ${state.storiesBelow||'—'}`],
+    ['Occupant Load',     state.occupantLoad || '—'],
+    ['Occupied During Construction', state.isOccupied ? '✅ YES (Annex F included)' : 'No'],
+    ['Contacts',          state.contacts.length + ' contact(s)'],
+    ['City',              state.city || '—'],
+    ['Fire Department',   state.fdName || '—'],
+    ['AHJ',               state.ahjName || '—'],
+    ['Primary Access',    state.accessStreet || '—'],
+    ['Knox Box',          state.knoxBoxLocation || '—'],
+    ['Nearest Hydrant',   state.nearestHydrant || '—'],
+    ['Muster Point A',    state.musterPointA || '—'],
+    ['Muster Point B',    state.musterPointB || '—'],
+    ['Fire Lanes Existing', state.firelanesExisting ? 'Yes' : 'No — to be established'],
+  ];
+  const t = document.getElementById('reviewTable');
+  t.innerHTML = rows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+}
+
+// ── Generate ───────────────────────────────────────────────────────────────
+async function generateDoc() {
+  collectCurrentStep();
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;width:20px;height:20px"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".25"/><path d="M21 12a9 9 0 00-9-9"/></svg> Generating…`;
+
+  // Format date nicely
+  const d = state.planDate ? new Date(state.planDate + 'T12:00:00') : new Date();
+  state.planDate = d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
+  try {
+    const res = await fetch('/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(state)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Server error');
+    }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `NFPA241_${(state.projectAddress||'Plan').replace(/[^a-zA-Z0-9]/g,'_').substring(0,40)}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+    btn.innerHTML = `✓ Downloaded! Generate Again`;
+    btn.style.background = 'var(--success)';
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.innerHTML = `Generate NFPA 241 Plan (.docx)`;
+    btn.style.background = '';
+  }
+  btn.disabled = false;
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Set today's date
+  document.getElementById('planDate').valueAsDate = new Date();
+  // Initialize toggles
+  document.getElementById('toggleFirelanes').classList.add('on');
+  // Render contacts
+  renderContacts();
+});
+
+// Spin animation
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>
