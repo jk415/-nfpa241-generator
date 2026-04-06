@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fire Alarm Battery Calculator — CAP Design Group</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:    #DC2626;
+    --dark:   #1E293B;
+    --mid:    #334155;
+    --muted:  #64748B;
+    --border: #CBD5E1;
+    --bg:     #F8FAFC;
+    --white:  #FFFFFF;
+    --success:#16A34A;
+    --warning:#F59E0B;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--dark);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 12px rgba(0,0,0,.25);
+  }
+  .logo { display: flex; align-items: center; gap: .75rem; }
+  .logo-mark {
+    width: 36px; height: 36px; background: var(--red);
+    border-radius: 6px; display: flex; align-items: center;
+    justify-content: center; font-family: 'DM Mono', monospace;
+    font-weight: 500; color: #fff; font-size: .85rem; letter-spacing: -.5px;
+  }
+  .logo-text { color: #fff; font-weight: 600; font-size: 1rem; letter-spacing: -.2px; }
+  .logo-sub  { color: #94A3B8; font-size: .75rem; font-weight: 400; }
+  .nav-link {
+    color: #94A3B8; text-decoration: none; font-size: .875rem;
+    font-weight: 500; transition: color .15s;
+  }
+  .nav-link:hover { color: #fff; }
+
+  /* Layout */
+  main { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .page-title { margin-bottom: 1.5rem; }
+  .page-title h1 { font-size: 1.5rem; font-weight: 700; color: var(--dark); }
+  .page-title p  { color: var(--muted); font-size: .875rem; margin-top: .25rem; }
+
+  /* Cards */
+  .card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .card-title {
+    font-size: .7rem; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--red);
+    margin-bottom: 1rem; padding-bottom: .6rem;
+    border-bottom: 2px solid #FEE2E2;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .card-title::before {
+    content: ''; display: block; width: 8px; height: 8px;
+    background: var(--red); border-radius: 2px;
+  }
+
+  /* Form elements */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: .75rem; }
+
+  .field { display: flex; flex-direction: column; gap: .35rem; }
+  label  { font-size: .75rem; font-weight: 600; color: var(--mid); }
+  label span { color: var(--red); margin-left: 2px; }
+
+  input[type=text], input[type=number], input[type=date], select, textarea {
+    width: 100%; padding: .55rem .75rem;
+    border: 1.5px solid var(--border);
+    border-radius: 6px; font-family: inherit;
+    font-size: .875rem; color: var(--dark);
+    background: var(--white);
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--dark);
+    box-shadow: 0 0 0 3px rgba(30,41,59,.08);
+  }
+  input[type=number] { font-family: 'DM Mono', monospace; }
+
+  /* Device Table */
+  .device-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .8rem;
+    margin-top: .5rem;
+  }
+  .device-table th {
+    background: var(--dark);
+    color: #fff;
+    font-weight: 600;
+    padding: .6rem .5rem;
+    text-align: left;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .device-table th:first-child { border-radius: 6px 0 0 0; }
+  .device-table th:last-child  { border-radius: 0 6px 0 0; }
+  .device-table td {
+    padding: .5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .device-table input {
+    padding: .4rem .5rem;
+    font-size: .8rem;
+  }
+  .device-table .desc-input { min-width: 180px; }
+  .device-table .num-input  { width: 80px; text-align: right; }
+
+  .btn-remove-row {
+    width: 28px; height: 28px; border: 1.5px solid #FEE2E2;
+    background: #FFF5F5; color: var(--red); border-radius: 5px;
+    cursor: pointer; font-size: .9rem; display: flex;
+    align-items: center; justify-content: center; transition: all .15s;
+  }
+  .btn-remove-row:hover { background: var(--red); color: #fff; }
+
+  .btn-add-row {
+    padding: .5rem 1rem; border: 1.5px dashed var(--border);
+    background: transparent; border-radius: 6px; cursor: pointer;
+    font-size: .75rem; font-weight: 600; color: var(--muted);
+    font-family: inherit; transition: all .15s;
+    margin-top: .75rem;
+  }
+  .btn-add-row:hover { border-color: var(--dark); color: var(--dark); background: var(--bg); }
+
+  /* Preset buttons */
+  .preset-btns {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+    margin-bottom: 1rem;
+  }
+  .preset-btn {
+    padding: .4rem .75rem; border: 1.5px solid var(--border);
+    background: var(--white); border-radius: 5px; cursor: pointer;
+    font-size: .7rem; font-weight: 600; color: var(--mid);
+    font-family: inherit; transition: all .15s;
+  }
+  .preset-btn:hover { border-color: var(--dark); color: var(--dark); background: var(--bg); }
+
+  /* Results */
+  .result-box {
+    background: linear-gradient(135deg, #FEF2F2 0%, #FFF5F5 100%);
+    border: 2px solid var(--red);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+  }
+  .result-title {
+    font-size: .7rem; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--red);
+    margin-bottom: .75rem;
+  }
+  .result-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+  }
+  .result-item {
+    text-align: center;
+  }
+  .result-label {
+    font-size: .7rem; color: var(--muted); margin-bottom: .25rem;
+  }
+  .result-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.25rem; font-weight: 700; color: var(--dark);
+  }
+  .result-value.highlight {
+    color: var(--red); font-size: 1.5rem;
+  }
+  .result-unit {
+    font-size: .75rem; font-weight: 400; color: var(--muted);
+  }
+
+  /* Generate button */
+  .btn-generate {
+    width: 100%; padding: .9rem; border: none;
+    background: var(--red); color: #fff; border-radius: 10px;
+    cursor: pointer; font-size: .95rem; font-weight: 700;
+    font-family: inherit; letter-spacing: .3px;
+    transition: all .2s; margin-top: 1.25rem;
+    display: flex; align-items: center; justify-content: center; gap: .75rem;
+  }
+  .btn-generate:hover { background: #B91C1C; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(220,38,38,.35); }
+  .btn-generate:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Info text */
+  .info-text {
+    font-size: .75rem; color: var(--muted);
+    margin-top: .5rem; line-height: 1.5;
+  }
+
+  @media (max-width: 640px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .result-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">CAP</div>
+    <div>
+      <div class="logo-text">Fire Alarm Battery Calculator</div>
+      <div class="logo-sub">NFPA 72 Compliant</div>
+    </div>
+  </div>
+  <a href="/" class="nav-link">NFPA 241 Generator</a>
+</header>
+
+<main>
+  <div class="page-title">
+    <h1>Fire Alarm Battery Calculation</h1>
+    <p>Calculate secondary power requirements per NFPA 72 Section 10.6.7</p>
+  </div>
+
+  <!-- Project Info -->
+  <div class="card">
+    <div class="card-title">Project Information</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Project Name<span>*</span></label>
+        <input type="text" id="projectName" placeholder="e.g., 123 Main Street Renovation">
+      </div>
+      <div class="field">
+        <label>Project Address</label>
+        <input type="text" id="projectAddress" placeholder="Full street address">
+      </div>
+      <div class="field">
+        <label>FACP Model</label>
+        <input type="text" id="facpModel" placeholder="e.g., Notifier NFS2-3030">
+      </div>
+      <div class="field">
+        <label>Calculation Date</label>
+        <input type="date" id="calcDate">
+      </div>
+    </div>
+  </div>
+
+  <!-- Design Criteria -->
+  <div class="card">
+    <div class="card-title">Design Criteria</div>
+    <div class="grid-4">
+      <div class="field">
+        <label>Standby Duration (hrs)</label>
+        <input type="number" id="standbyHours" value="24" min="1" step="1">
+      </div>
+      <div class="field">
+        <label>Alarm Duration (min)</label>
+        <input type="number" id="alarmMinutes" value="5" min="1" step="1">
+      </div>
+      <div class="field">
+        <label>Safety Factor (%)</label>
+        <input type="number" id="safetyFactor" value="20" min="0" max="50" step="5">
+      </div>
+      <div class="field">
+        <label>Derating Factor (%)</label>
+        <input type="number" id="deratingFactor" value="85" min="50" max="100" step="5">
+      </div>
+    </div>
+    <p class="info-text">Per NFPA 72 Section 10.6.7: Secondary power supply shall operate the system under quiescent load for 24 hours minimum, followed by 5 minutes of alarm (or 15 minutes for high-rise buildings).</p>
+  </div>
+
+  <!-- Device Load Schedule -->
+  <div class="card">
+    <div class="card-title">Device Current Load Schedule</div>
+
+    <div style="margin-bottom: .75rem;">
+      <label style="font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px;">Quick Add Common Devices</label>
+    </div>
+    <div class="preset-btns">
+      <button class="preset-btn" onclick="addPreset('FACP - Standby', 1, 150, 350)">+ FACP (Standby)</button>
+      <button class="preset-btn" onclick="addPreset('Photoelectric Smoke Detector', 1, 0.045, 0.045)">+ Smoke Det.</button>
+      <button class="preset-btn" onclick="addPreset('Heat Detector', 1, 0.025, 0.025)">+ Heat Det.</button>
+      <button class="preset-btn" onclick="addPreset('Manual Pull Station', 1, 0, 0)">+ Pull Station</button>
+      <button class="preset-btn" onclick="addPreset('Horn/Strobe (15cd)', 1, 0, 133)">+ Horn/Strobe 15cd</button>
+      <button class="preset-btn" onclick="addPreset('Horn/Strobe (30cd)', 1, 0, 159)">+ Horn/Strobe 30cd</button>
+      <button class="preset-btn" onclick="addPreset('Horn/Strobe (75cd)', 1, 0, 195)">+ Horn/Strobe 75cd</button>
+      <button class="preset-btn" onclick="addPreset('Horn/Strobe (110cd)', 1, 0, 227)">+ Horn/Strobe 110cd</button>
+      <button class="preset-btn" onclick="addPreset('Strobe Only (15cd)', 1, 0, 103)">+ Strobe 15cd</button>
+      <button class="preset-btn" onclick="addPreset('Duct Detector', 1, 0.045, 0.045)">+ Duct Det.</button>
+      <button class="preset-btn" onclick="addPreset('Monitor Module', 1, 0.010, 0.010)">+ Monitor Mod.</button>
+      <button class="preset-btn" onclick="addPreset('Relay Module', 1, 0.012, 25)">+ Relay Mod.</button>
+      <button class="preset-btn" onclick="addPreset('Door Holder', 1, 0, 40)">+ Door Holder</button>
+    </div>
+
+    <table class="device-table">
+      <thead>
+        <tr>
+          <th>Device Description</th>
+          <th>Qty</th>
+          <th>Standby (mA)</th>
+          <th>Alarm (mA)</th>
+          <th>Total Standby</th>
+          <th>Total Alarm</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="deviceTable">
+        <!-- Rows added dynamically -->
+      </tbody>
+    </table>
+
+    <button class="btn-add-row" onclick="addDeviceRow()">+ Add Device Row</button>
+  </div>
+
+  <!-- Live Calculation Results -->
+  <div class="card">
+    <div class="card-title">Calculation Results</div>
+    <div class="result-box">
+      <div class="result-title">Battery Requirement Summary</div>
+      <div class="result-grid">
+        <div class="result-item">
+          <div class="result-label">Total Standby Current</div>
+          <div class="result-value" id="totalStandby">0.00<span class="result-unit"> mA</span></div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">Total Alarm Current</div>
+          <div class="result-value" id="totalAlarm">0.00<span class="result-unit"> mA</span></div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">Required Capacity</div>
+          <div class="result-value highlight" id="requiredAh">0.00<span class="result-unit"> Ah</span></div>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(220,38,38,.2);">
+        <div class="result-label">Recommended Battery</div>
+        <div class="result-value highlight" id="recommendedBattery">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate Button -->
+  <button class="btn-generate" id="generateBtn" onclick="generateDoc()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="16" y1="13" x2="8" y2="13"></line>
+      <line x1="16" y1="17" x2="8" y2="17"></line>
+      <polyline points="10 9 9 9 8 9"></polyline>
+    </svg>
+    Generate Battery Calculation (.docx)
+  </button>
+
+</main>
+
+<script>
+let devices = [];
+let deviceIdCounter = 0;
+
+// Standard battery sizes
+const STANDARD_BATTERIES = [4, 7, 12, 17, 18, 26, 33, 40, 55, 75, 100, 150, 200];
+
+function addDeviceRow(desc = '', qty = 1, standby = 0, alarm = 0) {
+  const id = deviceIdCounter++;
+  devices.push({ id, description: desc, qty, standbyMa: standby, alarmMa: alarm });
+  renderDeviceTable();
+  recalculate();
+}
+
+function addPreset(desc, qty, standby, alarm) {
+  // Check if device already exists
+  const existing = devices.find(d => d.description === desc);
+  if (existing) {
+    existing.qty += qty;
+    renderDeviceTable();
+  } else {
+    addDeviceRow(desc, qty, standby, alarm);
+  }
+  recalculate();
+}
+
+function removeDevice(id) {
+  devices = devices.filter(d => d.id !== id);
+  renderDeviceTable();
+  recalculate();
+}
+
+function updateDevice(id, field, value) {
+  const device = devices.find(d => d.id === id);
+  if (device) {
+    if (field === 'qty') device.qty = parseInt(value) || 0;
+    else if (field === 'standbyMa') device.standbyMa = parseFloat(value) || 0;
+    else if (field === 'alarmMa') device.alarmMa = parseFloat(value) || 0;
+    else if (field === 'description') device.description = value;
+  }
+  recalculate();
+}
+
+function renderDeviceTable() {
+  const tbody = document.getElementById('deviceTable');
+  tbody.innerHTML = devices.map(d => {
+    const totalStandby = (d.qty * d.standbyMa).toFixed(2);
+    const totalAlarm = (d.qty * d.alarmMa).toFixed(2);
+    return `
+      <tr>
+        <td><input type="text" class="desc-input" value="${d.description}" onchange="updateDevice(${d.id}, 'description', this.value)"></td>
+        <td><input type="number" class="num-input" value="${d.qty}" min="0" onchange="updateDevice(${d.id}, 'qty', this.value)"></td>
+        <td><input type="number" class="num-input" value="${d.standbyMa}" min="0" step="0.001" onchange="updateDevice(${d.id}, 'standbyMa', this.value)"></td>
+        <td><input type="number" class="num-input" value="${d.alarmMa}" min="0" step="0.001" onchange="updateDevice(${d.id}, 'alarmMa', this.value)"></td>
+        <td style="font-family: 'DM Mono', monospace; font-size: .8rem; color: var(--mid);">${totalStandby}</td>
+        <td style="font-family: 'DM Mono', monospace; font-size: .8rem; color: var(--mid);">${totalAlarm}</td>
+        <td><button class="btn-remove-row" onclick="removeDevice(${d.id})">x</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function recalculate() {
+  const standbyHours = parseFloat(document.getElementById('standbyHours').value) || 24;
+  const alarmMinutes = parseFloat(document.getElementById('alarmMinutes').value) || 5;
+  const safetyFactor = (parseFloat(document.getElementById('safetyFactor').value) || 20) / 100;
+  const deratingFactor = (parseFloat(document.getElementById('deratingFactor').value) || 85) / 100;
+
+  let totalStandbyMa = 0;
+  let totalAlarmMa = 0;
+
+  devices.forEach(d => {
+    totalStandbyMa += d.qty * d.standbyMa;
+    totalAlarmMa += d.qty * d.alarmMa;
+  });
+
+  const alarmHours = alarmMinutes / 60;
+  const standbyAh = (totalStandbyMa / 1000) * standbyHours;
+  const alarmAh = (totalAlarmMa / 1000) * alarmHours;
+  const subtotalAh = standbyAh + alarmAh;
+  const withSafety = subtotalAh * (1 + safetyFactor);
+  const requiredAh = withSafety / deratingFactor;
+
+  // Find recommended battery
+  let recommended = STANDARD_BATTERIES.find(b => b >= requiredAh) || STANDARD_BATTERIES[STANDARD_BATTERIES.length - 1];
+  if (requiredAh <= 0) recommended = '—';
+
+  // Update display
+  document.getElementById('totalStandby').innerHTML = `${totalStandbyMa.toFixed(2)}<span class="result-unit"> mA</span>`;
+  document.getElementById('totalAlarm').innerHTML = `${totalAlarmMa.toFixed(2)}<span class="result-unit"> mA</span>`;
+  document.getElementById('requiredAh').innerHTML = `${requiredAh.toFixed(2)}<span class="result-unit"> Ah</span>`;
+  document.getElementById('recommendedBattery').textContent = typeof recommended === 'number' ? `${recommended} Ah (12V SLA)` : recommended;
+}
+
+async function generateDoc() {
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;width:20px;height:20px"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".25"/><path d="M21 12a9 9 0 00-9-9"/></svg> Generating...`;
+
+  const data = {
+    projectName: document.getElementById('projectName').value,
+    projectAddress: document.getElementById('projectAddress').value,
+    facpModel: document.getElementById('facpModel').value,
+    calcDate: document.getElementById('calcDate').value,
+    standbyHours: document.getElementById('standbyHours').value,
+    alarmMinutes: document.getElementById('alarmMinutes').value,
+    safetyFactor: document.getElementById('safetyFactor').value,
+    deratingFactor: document.getElementById('deratingFactor').value,
+    devices: devices
+  };
+
+  try {
+    const res = await fetch('/generate-battery-calc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Server error');
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Battery_Calc_${(data.projectName || 'Project').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Downloaded!`;
+    btn.style.background = 'var(--success)';
+  } catch (e) {
+    alert('Error: ' + e.message);
+    btn.innerHTML = `Generate Battery Calculation (.docx)`;
+    btn.style.background = '';
+  }
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Generate Battery Calculation (.docx)`;
+    btn.style.background = '';
+  }, 3000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('calcDate').valueAsDate = new Date();
+
+  // Add default FACP row
+  addDeviceRow('Fire Alarm Control Panel (FACP)', 1, 150, 350);
+
+  // Add event listeners for live recalculation
+  ['standbyHours', 'alarmMinutes', 'safetyFactor', 'deratingFactor'].forEach(id => {
+    document.getElementById(id).addEventListener('input', recalculate);
+  });
+});
+
+// Spin animation
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>

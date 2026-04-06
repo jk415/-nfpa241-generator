@@ -612,5 +612,302 @@ def generate():
         return {'error': str(e)}, 500
 
 
+def generate_battery_calc(data):
+    """Generate NFPA 72 Fire Alarm Battery Calculation Document"""
+    doc = Document()
+    for section in doc.sections:
+        section.top_margin    = Inches(0.75)
+        section.bottom_margin = Inches(0.75)
+        section.left_margin   = Inches(0.75)
+        section.right_margin  = Inches(0.75)
+
+    def h1(text):
+        p = doc.add_paragraph()
+        set_para_spacing(p, before=200, after=100)
+        add_bottom_border(p, "DC2626", 12)
+        run = p.add_run(text)
+        run.bold = True; run.font.size = Pt(14)
+        run.font.color.rgb = DARK; run.font.name = 'Calibri'
+        return p
+
+    def h2(text):
+        p = doc.add_paragraph()
+        set_para_spacing(p, before=140, after=60)
+        run = p.add_run(text)
+        run.bold = True; run.font.size = Pt(11)
+        run.font.color.rgb = RED; run.font.name = 'Calibri'
+        return p
+
+    def body(text, bold=False, italic=False, color=None, align=WD_ALIGN_PARAGRAPH.LEFT, size=10):
+        p = doc.add_paragraph()
+        p.alignment = align
+        set_para_spacing(p, after=60)
+        run = p.add_run(text)
+        run.bold = bold; run.italic = italic
+        run.font.size = Pt(size); run.font.name = 'Calibri'
+        if color: run.font.color.rgb = color
+        return p
+
+    def kv(key, val):
+        p = doc.add_paragraph()
+        set_para_spacing(p, after=40)
+        r1 = p.add_run(f"{key}:  "); r1.bold = True
+        r1.font.size = Pt(10); r1.font.name = 'Calibri'
+        r2 = p.add_run(str(val) if val else "[TBD]")
+        r2.font.size = Pt(10); r2.font.name = 'Calibri'
+        return p
+
+    def spacer(after=60):
+        p = doc.add_paragraph()
+        set_para_spacing(p, after=after)
+        return p
+
+    def calc_row(table, values, header=False, highlight=False):
+        row = table.add_row()
+        for i, val in enumerate(values):
+            cell = row.cells[i]
+            cell.text = ""
+            if header:
+                set_cell_bg(cell, "1E293B")
+                run = cell.paragraphs[0].add_run(str(val))
+                run.bold = True; run.font.color.rgb = WHITE
+            elif highlight:
+                set_cell_bg(cell, "FEF2F2")
+                run = cell.paragraphs[0].add_run(str(val))
+                run.bold = True; run.font.color.rgb = RED
+            else:
+                run = cell.paragraphs[0].add_run(str(val) if val else "")
+                run.font.color.rgb = DARK
+            run.font.size = Pt(9); run.font.name = 'Calibri'
+        return row
+
+    # Extract data
+    project_name = data.get('projectName', '[PROJECT NAME]')
+    project_addr = data.get('projectAddress', '[PROJECT ADDRESS]')
+    facp_model = data.get('facpModel', '[FACP MODEL]')
+    calc_date = data.get('calcDate', datetime.today().strftime('%B %d, %Y'))
+
+    standby_hours = float(data.get('standbyHours', 24))
+    alarm_minutes = float(data.get('alarmMinutes', 5))
+    safety_factor = float(data.get('safetyFactor', 20)) / 100
+    derating_factor = float(data.get('deratingFactor', 85)) / 100
+
+    devices = data.get('devices', [])
+
+    # Calculate totals
+    total_standby_ma = 0
+    total_alarm_ma = 0
+
+    for dev in devices:
+        qty = int(dev.get('qty', 0))
+        standby = float(dev.get('standbyMa', 0))
+        alarm = float(dev.get('alarmMa', 0))
+        total_standby_ma += qty * standby
+        total_alarm_ma += qty * alarm
+
+    # NFPA 72 Battery Calculation
+    # Required capacity = (Standby current x Standby hours) + (Alarm current x Alarm hours)
+    # Then apply safety factor and derating
+    alarm_hours = alarm_minutes / 60
+
+    standby_ah = (total_standby_ma / 1000) * standby_hours
+    alarm_ah = (total_alarm_ma / 1000) * alarm_hours
+    subtotal_ah = standby_ah + alarm_ah
+
+    # Apply safety factor
+    with_safety = subtotal_ah * (1 + safety_factor)
+
+    # Apply derating factor (batteries should not be discharged below rated capacity)
+    required_ah = with_safety / derating_factor
+
+    # ── HEADER ──────────────────────────────────────────────────────────────
+    body("FIRE ALARM SYSTEM", bold=True, size=12, align=WD_ALIGN_PARAGRAPH.CENTER)
+    body("BATTERY CALCULATION", bold=True, size=18, color=RED, align=WD_ALIGN_PARAGRAPH.CENTER)
+    body("Per NFPA 72 (2019) — National Fire Alarm and Signaling Code", size=10, color=GREY, align=WD_ALIGN_PARAGRAPH.CENTER)
+    spacer(40)
+    body("CAP Design Group", bold=True, size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+    body("335 Washington St. Suite 1114, Woburn, MA 01801", size=9, color=GREY, align=WD_ALIGN_PARAGRAPH.CENTER)
+    body("617-644-0014  |  admin@capcofire.com", size=9, color=GREY, align=WD_ALIGN_PARAGRAPH.CENTER)
+    spacer(80)
+
+    # ── PROJECT INFO ────────────────────────────────────────────────────────
+    h1("PROJECT INFORMATION")
+    kv("Project Name", project_name)
+    kv("Project Address", project_addr)
+    kv("FACP Model", facp_model)
+    kv("Calculation Date", calc_date)
+    kv("Prepared By", data.get('preparedBy', 'CAP Design Group'))
+    spacer(40)
+
+    # ── DESIGN CRITERIA ─────────────────────────────────────────────────────
+    h1("DESIGN CRITERIA")
+    body("Per NFPA 72 Section 10.6.7, secondary power supply shall be capable of operating the fire alarm system under quiescent (standby) load for a minimum of 24 hours, followed by 5 minutes of alarm.")
+    spacer(20)
+    kv("Standby Duration", f"{standby_hours} hours")
+    kv("Alarm Duration", f"{alarm_minutes} minutes")
+    kv("Safety Factor", f"{int(safety_factor * 100)}%")
+    kv("Battery Derating Factor", f"{int(derating_factor * 100)}%")
+    spacer(40)
+
+    # ── DEVICE LOAD TABLE ───────────────────────────────────────────────────
+    h1("DEVICE CURRENT LOAD SCHEDULE")
+
+    dev_table = doc.add_table(rows=1, cols=6)
+    dev_table.style = 'Table Grid'
+    calc_row(dev_table, ["Device Description", "Qty", "Standby (mA)", "Alarm (mA)", "Total Standby (mA)", "Total Alarm (mA)"], header=True)
+
+    for dev in devices:
+        qty = int(dev.get('qty', 0))
+        standby = float(dev.get('standbyMa', 0))
+        alarm = float(dev.get('alarmMa', 0))
+        if qty > 0:
+            calc_row(dev_table, [
+                dev.get('description', ''),
+                qty,
+                f"{standby:.2f}",
+                f"{alarm:.2f}",
+                f"{qty * standby:.2f}",
+                f"{qty * alarm:.2f}"
+            ])
+
+    # Totals row
+    calc_row(dev_table, [
+        "TOTAL SYSTEM CURRENT",
+        "",
+        "",
+        "",
+        f"{total_standby_ma:.2f}",
+        f"{total_alarm_ma:.2f}"
+    ], highlight=True)
+
+    spacer(60)
+
+    # ── BATTERY CALCULATION ─────────────────────────────────────────────────
+    h1("BATTERY CAPACITY CALCULATION")
+
+    calc_table = doc.add_table(rows=1, cols=4)
+    calc_table.style = 'Table Grid'
+    calc_row(calc_table, ["Description", "Current (A)", "Duration (hrs)", "Capacity (Ah)"], header=True)
+
+    calc_row(calc_table, [
+        "Standby Load",
+        f"{total_standby_ma / 1000:.3f}",
+        f"{standby_hours:.1f}",
+        f"{standby_ah:.3f}"
+    ])
+
+    calc_row(calc_table, [
+        "Alarm Load",
+        f"{total_alarm_ma / 1000:.3f}",
+        f"{alarm_hours:.4f}",
+        f"{alarm_ah:.3f}"
+    ])
+
+    calc_row(calc_table, [
+        "Subtotal",
+        "",
+        "",
+        f"{subtotal_ah:.3f}"
+    ])
+
+    calc_row(calc_table, [
+        f"Plus {int(safety_factor * 100)}% Safety Factor",
+        "",
+        "",
+        f"{with_safety:.3f}"
+    ])
+
+    calc_row(calc_table, [
+        f"Divided by {int(derating_factor * 100)}% Derating",
+        "",
+        "",
+        f"{required_ah:.3f}"
+    ], highlight=True)
+
+    spacer(60)
+
+    # ── SUMMARY ─────────────────────────────────────────────────────────────
+    h1("CALCULATION SUMMARY")
+
+    summary_table = doc.add_table(rows=1, cols=2)
+    summary_table.style = 'Table Grid'
+
+    calc_row(summary_table, ["Parameter", "Value"], header=True)
+    calc_row(summary_table, ["Total Standby Current", f"{total_standby_ma:.2f} mA ({total_standby_ma/1000:.3f} A)"])
+    calc_row(summary_table, ["Total Alarm Current", f"{total_alarm_ma:.2f} mA ({total_alarm_ma/1000:.3f} A)"])
+    calc_row(summary_table, ["Standby Capacity Required", f"{standby_ah:.3f} Ah"])
+    calc_row(summary_table, ["Alarm Capacity Required", f"{alarm_ah:.3f} Ah"])
+    calc_row(summary_table, ["MINIMUM BATTERY CAPACITY REQUIRED", f"{required_ah:.2f} Ah"], highlight=True)
+
+    spacer(40)
+
+    # Recommended battery
+    std_batteries = [4, 7, 12, 17, 18, 26, 33, 40, 55, 75, 100, 150, 200]
+    recommended = next((b for b in std_batteries if b >= required_ah), std_batteries[-1])
+
+    h2("RECOMMENDED BATTERY")
+    body(f"Based on the calculation above, the minimum required battery capacity is {required_ah:.2f} Ah.")
+    body(f"Recommended Battery: {recommended} Ah (12V sealed lead-acid)", bold=True)
+
+    if recommended >= 26:
+        body("Note: For batteries 26 Ah and larger, a separate battery cabinet or enclosure may be required.", italic=True, color=GREY)
+
+    spacer(60)
+
+    # ── NOTES ───────────────────────────────────────────────────────────────
+    h1("NOTES AND REFERENCES")
+    notes = [
+        "1. This calculation is prepared in accordance with NFPA 72 (2019), Section 10.6.7.",
+        "2. Standby current values are based on manufacturer specifications at quiescent load.",
+        "3. Alarm current values assume all notification appliances operating simultaneously.",
+        "4. Battery derating accounts for temperature, age, and capacity reduction over service life.",
+        f"5. A {int(safety_factor * 100)}% safety factor has been applied per industry best practice.",
+        "6. Actual battery selection should be coordinated with FACP manufacturer requirements.",
+        "7. Batteries shall be replaced per manufacturer recommendations or every 5 years, whichever is sooner.",
+    ]
+    for note in notes:
+        body(note, size=9)
+
+    spacer(80)
+
+    # ── CERTIFICATION ───────────────────────────────────────────────────────
+    body("_" * 50)
+    body("Prepared By:", bold=True)
+    body("CAP Design Group")
+    body("MA Fire Protection PE License No. 48388")
+    spacer(40)
+    body("[PE SEAL — INSERT HERE]", italic=True, color=GREY, align=WD_ALIGN_PARAGRAPH.CENTER)
+
+    return doc
+
+
+@app.route('/battery-calc')
+def battery_calc():
+    return render_template('battery_calc.html')
+
+
+@app.route('/generate-battery-calc', methods=['POST'])
+def generate_battery_calc_route():
+    try:
+        data = request.get_json()
+        doc = generate_battery_calc(data)
+
+        buf = io.BytesIO()
+        doc.save(buf)
+        buf.seek(0)
+
+        project_slug = data.get('projectName', 'battery_calc').replace(' ', '_').replace(',', '')[:30]
+        filename = f"Battery_Calc_{project_slug}.docx"
+
+        return send_file(
+            buf,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)
